@@ -122,8 +122,8 @@ document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>
 
 function renderSelectOptions(select, selected){select.innerHTML="";currencyList().forEach(c=>{const opt=document.createElement("option");opt.value=c;opt.textContent=c;opt.selected=c===selected;select.appendChild(opt)})}
 function renderPeople(){const box=el("peopleChips");box.innerHTML="";state.people.forEach(person=>{const chip=document.createElement("button");chip.className="chip";chip.textContent=person+" ×";chip.onclick=async()=>{if(state.people.length<=1)return toast("Keep at least one person.");state.people=state.people.filter(p=>p!==person);await saveTripMeta();render()};box.appendChild(chip)})}
-function renderPayerSelect(){const sel=el("payerSelect");sel.innerHTML="";state.people.forEach(p=>{const opt=document.createElement("option");opt.value=p;opt.textContent=p;sel.appendChild(opt)})}
-function renderSplitChips(){const box=el("splitChips");box.innerHTML="";state.people.forEach(p=>{const chip=document.createElement("button");chip.type="button";chip.className="chip active";chip.textContent=p;chip.dataset.person=p;chip.onclick=()=>chip.classList.toggle("active");box.appendChild(chip)})}
+function renderPayerSelect(){const sel=el("payerSelect");if(!sel)return;sel.innerHTML="";state.people.forEach(p=>{const opt=document.createElement("option");opt.value=p;opt.textContent=p;sel.appendChild(opt)})}
+function renderSplitChips(){const box=el("splitChips");if(!box)return;box.innerHTML="";state.people.forEach(p=>{const chip=document.createElement("button");chip.type="button";chip.className="chip active";chip.textContent=p;chip.dataset.person=p;chip.onclick=()=>chip.classList.toggle("active");box.appendChild(chip)})}
 function renderFxInputs(){
   const box=el("fxInputs"); box.innerHTML="";
   currencyList().forEach(c=>{
