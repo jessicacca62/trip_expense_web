@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Trip Split — Shared Firebase App</title>
+<style>
+:root{
+  --bg:#f7f5ef; --card:#fffdf8; --ink:#24211d; --muted:#6b6358; --line:#e8dfd1;
+  --accent:#d86b4a; --accent2:#25736f; --soft:#f1e6d7; --good:#e6f4ea; --bad:#fce8e6;
+  --shadow:0 10px 30px rgba(50,38,22,.08); --r:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans TC","Noto Sans HK",sans-serif}
+header{padding:26px 22px 18px;max-width:1280px;margin:auto}
+h1{margin:0 0 8px;font-size:clamp(28px,4vw,44px);letter-spacing:-.04em}
+p{color:var(--muted)}
+button,input,select,textarea{font:inherit}
+button{border:0;border-radius:999px;padding:10px 14px;background:var(--ink);color:white;cursor:pointer}
+button.secondary{background:var(--soft);color:var(--ink)}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.danger{background:#b3261e}
+button.small{padding:7px 10px;font-size:13px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.wrap{max-width:1280px;margin:auto;padding:0 22px 40px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.panel{padding:18px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid{display:grid;gap:12px}
+label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:white;color:var(--ink);padding:10px 11px}
+textarea{min-height:72px;resize:vertical}
+.tabs{display:flex;gap:8px;padding:10px;position:sticky;top:0;background:rgba(247,245,239,.92);backdrop-filter:blur(10px);z-index:5}
+.tab{background:transparent;color:var(--muted);border:1px solid transparent}
+.tab.active{background:var(--ink);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.kpi{padding:16px;border-radius:16px;background:white;border:1px solid var(--line)}
+.kpi b{display:block;font-size:24px;margin-top:4px}
+.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:16px}
+table{width:100%;border-collapse:collapse;background:white}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:#fffaf2;position:sticky;top:0}
+td.notes{white-space:normal;min-width:180px}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:var(--soft);font-size:12px}
+.good{background:var(--good)} .bad{background:var(--bad)}
+.peopleChecks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.check{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px;background:white;color:var(--ink)}
+.check input{width:auto}
+.sectionTitle{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}
+.sectionTitle h2{font-size:18px;margin:0}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.chart{display:grid;gap:8px}
+.barRow{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center}
+.bar{height:12px;background:var(--soft);border-radius:999px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent2);border-radius:999px}
+.notice{border:1px dashed var(--accent);background:#fff8f3;border-radius:16px;padding:12px;color:#694331}
+@media(max-width:920px){.wrap{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.kpis{grid-template-columns:1fr}.peopleChecks{grid-template-columns:1fr}.barRow{grid-template-columns:1fr}.tabs{overflow:auto}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Trip Split</h1>
+  <p>A reusable shared expense splitter for group trips. Add a Firebase config once, then share the trip link so everyone edits the same data live.</p>
+</header>
+
+<div class="wrap">
+  <aside class="card panel grid">
+    <div class="sectionTitle"><h2>Trip</h2><button class="small secondary" id="newTripBtn">New shared trip</button></div>
+    <label>Current trip<select id="tripSelect"></select></label>
+    <div class="notice" id="syncStatus">Connecting…</div>
+    <div class="row"><button class="small secondary" id="copyTripLinkBtn">Copy trip link</button></div>
+    <label>Trip name<input id="tripName" /></label>
+    <div class="row">
+      <button id="saveTripBtn">Save</button>
+      <button class="secondary" id="duplicateTripBtn">Duplicate</button>
+      <button class="danger" id="deleteTripBtn">Delete</button>
+    </div>
+
+    <hr>
+    <div class="sectionTitle"><h2>People</h2></div>
+    <div id="peopleList" class="grid"></div>
+    <div class="row">
+      <input id="newPersonName" placeholder="Add person" />
+      <button class="secondary" id="addPersonBtn">Add</button>
+    </div>
+
+    <hr>
+    <div class="sectionTitle"><h2>Add expense</h2></div>
+    <div class="grid">
+      <label>Date<input id="expenseDate" type="date" /></label>
+      <label>Item<input id="expenseItem" placeholder="Dinner, Grab, villa..." /></label>
+      <div class="row" style="align-items:end">
+        <label style="flex:1">Amount<input id="expenseAmount" type="number" min="0" step="0.01" /></label>
+        <label style="width:120px">Currency<select id="expenseCurrency"><option>HKD</option><option>THB</option><option>USD</option><option>AUD</option></select></label>
+      </div>
+      <label>FX to HKD<input id="expenseFx" type="number" min="0" step="0.0001" value="1" /></label>
+      <label>Paid by<select id="expensePayer"></select></label>
+      <label>Category<select id="expenseCategory"><option>Food</option><option>Transport</option><option>Accommodation</option><option>Activity</option><option>Shopping</option><option>Other</option></select></label>
+      <label>Split between</label>
+      <div id="participantChecks" class="peopleChecks"></div>
+      <div class="row">
+        <button class="small secondary" id="selectAllBtn">All</button>
+        <button class="small secondary" id="selectNoneBtn">None</button>
+      </div>
+      <label>Notes<textarea id="expenseNotes" placeholder="Optional"></textarea></label>
+      <button id="addExpenseBtn">Add expense</button>
+    </div>
+
+    <hr>
+    <div class="sectionTitle"><h2>Import / export</h2></div>
+    <div class="row">
+      <button class="secondary" id="exportJsonBtn">Export JSON</button>
+      <label class="ghost" style="display:inline-flex;align-items:center;border-radius:999px;padding:9px 12px;border:1px solid var(--line);cursor:pointer">Import JSON<input id="importJsonInput" type="file" accept="application/json" class="hidden"></label>
+      <button class="secondary" id="exportCsvBtn">Export CSV</button>
+    </div>
+  </aside>
+
+  <main>
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="expenses">Expenses</button>
+      <button class="tab" data-tab="settle">Settle up</button>
+    </nav>
+
+    <section id="dashboard" class="card panel tabPage">
+      <div class="kpis">
+        <div class="kpi"><span>Total HKD</span><b id="kpiTotal">$0</b></div>
+        <div class="kpi"><span>Expenses</span><b id="kpiCount">0</b></div>
+        <div class="kpi"><span>People</span><b id="kpiPeople">0</b></div>
+        <div class="kpi"><span>Top payer</span><b id="kpiTopPayer">—</b></div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+        <div>
+          <div class="sectionTitle"><h2>Balance by person</h2></div>
+          <div id="balanceChart" class="chart"></div>
+        </div>
+        <div>
+          <div class="sectionTitle"><h2>Spend by category</h2></div>
+          <div id="categoryChart" class="chart"></div>
+        </div>
+      </div>
+      <hr>
+      <div class="notice">Tip: for each expense, “paid by” records who fronted the money; “split between” records who should share the cost. Positive balance means they should receive money back.</div>
+    </section>
+
+    <section id="expenses" class="card panel tabPage hidden">
+      <div class="sectionTitle">
+        <h2>Expenses</h2>
+        <div class="row">
+          <input id="searchExpense" placeholder="Search..." style="width:220px">
+          <select id="filterPerson" style="width:180px"><option value="">All people</option></select>
+        </div>
+      </div>
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>Date</th><th>Item</th><th>HKD</th><th>Original</th><th>Paid by</th><th>Split</th><th>Category</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="expenseRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="settle" class="card panel tabPage hidden">
+      <div class="sectionTitle"><h2>Who pays whom</h2></div>
+      <div id="settlementList" class="grid"></div>
+      <hr>
+      <div class="sectionTitle"><h2>Detailed ledger</h2></div>
+      <div class="tableWrap">
+        <table>
+          <thead><tr><th>Person</th><th>Paid</th><th>Share</th><th>Balance</th></tr></thead>
+          <tbody id="ledgerRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.12.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore-compat.js"></script>
+<script>
+const STORE_KEY = "tripSplitSharedFallback.v1";
+const FIREBASE_READY = !!(window.firebaseConfig && window.firebaseConfig.apiKey && !String(window.firebaseConfig.apiKey).includes("PASTE_"));
+let db = null;
+let unsubscribeTrip = null;
+let applyingRemote = false;
+if (FIREBASE_READY) {
+  firebase.initializeApp(window.firebaseConfig);
+  db = firebase.firestore();
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+}
+const tripsCol = () => db.collection("trips");
+const seed = {
+  trips: [{
+    id: crypto.randomUUID(),
+    name: "曼谷短周友情大考驗高溫之旅 2026",
+    people: ["Matthew","Jessica","Alex","Bonnie","Godfrey","Tina","Kelvin Tam"],
+    expenses: []
+  }],
+  activeTripId: null
+};
+seed.activeTripId = seed.trips[0].id;
+
+let state = load();
+function load(){
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || seed; }
+  catch { return structuredClone(seed); }
+}
+function saveLocal(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+function trip(){ return state.trips.find(t=>t.id===state.activeTripId) || state.trips[0]; }
+function setSyncStatus(text){ const el=document.getElementById("syncStatus"); if(el) el.textContent=text; }
+async function save(){
+  saveLocal();
+  if(!FIREBASE_READY || !db || applyingRemote){
+    setSyncStatus(FIREBASE_READY ? "Applying remote update…" : "Local fallback: paste Firebase config into firebase-config.js to enable shared editing.");
+    return;
+  }
+  const t = trip();
+  await tripsCol().doc(t.id).set({...t, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+  setSyncStatus("Synced. Share this trip link with your group.");
+}
+function urlTripId(){ return new URLSearchParams(location.search).get("trip"); }
+function setUrlTrip(id){ const url=new URL(location.href); url.searchParams.set("trip", id); history.replaceState(null,"",url); }
+async function startSharedTrip(id){
+  if(!id) id = state.activeTripId;
+  state.activeTripId = id; saveLocal(); setUrlTrip(id);
+  if(!FIREBASE_READY || !db){ setSyncStatus("Local fallback: paste Firebase config into firebase-config.js to enable shared editing."); render(); return; }
+  if(unsubscribeTrip) unsubscribeTrip();
+  unsubscribeTrip = tripsCol().doc(id).onSnapshot(async snap=>{
+    if(!snap.exists){ await save(); return; }
+    applyingRemote = true;
+    const remote = snap.data();
+    const clean = {id: remote.id || id, name: remote.name || "Untitled trip", people: remote.people || [], expenses: remote.expenses || []};
+    const idx = state.trips.findIndex(t=>t.id===clean.id);
+    if(idx >= 0) state.trips[idx] = clean; else state.trips.push(clean);
+    state.activeTripId = clean.id; saveLocal(); render(); setSyncStatus("Live sync on. Everyone with this link edits the same trip.");
+    applyingRemote = false;
+  }, err=>{ setSyncStatus("Sync error: " + err.message); render(); });
+}
+function money(n){ return "$" + (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function amountHKD(e){ return Number(e.amount||0) * Number(e.fx||1); }
+function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function calculations(){
+  const t = trip();
+  const people = t.people;
+  const ledger = Object.fromEntries(people.map(p=>[p,{paid:0,share:0,balance:0}]));
+  const categories = {};
+  for(const e of t.expenses){
+    const hkd = amountHKD(e);
+    if(ledger[e.payer]) ledger[e.payer].paid += hkd;
+    const participants = (e.participants||[]).filter(p=>ledger[p]);
+    const per = participants.length ? hkd / participants.length : 0;
+    for(const p of participants) ledger[p].share += per;
+    categories[e.category || "Other"] = (categories[e.category || "Other"] || 0) + hkd;
+  }
+  for(const p of people) ledger[p].balance = ledger[p].paid - ledger[p].share;
+  const debtors = people.map(p=>({p,amt:-ledger[p].balance})).filter(x=>x.amt>0.005).sort((a,b)=>b.amt-a.amt);
+  const creditors = people.map(p=>({p,amt:ledger[p].balance})).filter(x=>x.amt>0.005).sort((a,b)=>b.amt-a.amt);
+  const settlements = [];
+  let i=0,j=0;
+  while(i<debtors.length && j<creditors.length){
+    const pay = Math.min(debtors[i].amt, creditors[j].amt);
+    settlements.push({from:debtors[i].p,to:creditors[j].p,amount:pay});
+    debtors[i].amt -= pay; creditors[j].amt -= pay;
+    if(debtors[i].amt<0.005) i++;
+    if(creditors[j].amt<0.005) j++;
+  }
+  return {ledger,categories,settlements,total:t.expenses.reduce((s,e)=>s+amountHKD(e),0)};
+}
+
+function render(){
+  const t = trip(); if(!t) return;
+  document.getElementById("tripName").value = t.name;
+  const tripSelect = document.getElementById("tripSelect");
+  tripSelect.innerHTML = state.trips.map(x=>`<option value="${x.id}" ${x.id===t.id?"selected":""}>${escapeHtml(x.name)}</option>`).join("");
+
+  document.getElementById("peopleList").innerHTML = t.people.map((p,i)=>`
+    <div class="row">
+      <input value="${escapeHtml(p)}" data-person-index="${i}" />
+      <button class="small ghost" onclick="removePerson(${i})">Remove</button>
+    </div>`).join("");
+
+  const personOptions = t.people.map(p=>`<option>${escapeHtml(p)}</option>`).join("");
+  document.getElementById("expensePayer").innerHTML = personOptions;
+  document.getElementById("filterPerson").innerHTML = `<option value="">All people</option>` + personOptions;
+  document.getElementById("participantChecks").innerHTML = t.people.map(p=>`
+    <label class="check"><input type="checkbox" value="${escapeHtml(p)}" checked> ${escapeHtml(p)}</label>`).join("");
+
+  const c = calculations();
+  document.getElementById("kpiTotal").textContent = money(c.total);
+  document.getElementById("kpiCount").textContent = t.expenses.length;
+  document.getElementById("kpiPeople").textContent = t.people.length;
+  const top = Object.entries(c.ledger).sort((a,b)=>b[1].paid-a[1].paid)[0];
+  document.getElementById("kpiTopPayer").textContent = top && top[1].paid ? top[0] : "—";
+
+  renderBars("balanceChart", Object.entries(c.ledger).map(([name,v])=>({name,value:v.balance})), true);
+  renderBars("categoryChart", Object.entries(c.categories).map(([name,value])=>({name,value})), false);
+  renderExpenses();
+  renderSettle();
+}
+
+function renderBars(id, data, allowNegative){
+  const el = document.getElementById(id);
+  if(!data.length){ el.innerHTML = `<p>No data yet.</p>`; return; }
+  const max = Math.max(...data.map(d=>Math.abs(d.value)),1);
+  el.innerHTML = data.map(d=>`
+    <div class="barRow">
+      <div>${escapeHtml(d.name)}</div>
+      <div class="bar"><span style="width:${Math.min(100,Math.abs(d.value)/max*100)}%;${allowNegative&&d.value<0?"background:var(--accent)":""}"></span></div>
+      <div><span class="pill ${d.value>=0?'good':'bad'}">${money(d.value)}</span></div>
+    </div>`).join("");
+}
+
+function renderExpenses(){
+  const t = trip();
+  const q = document.getElementById("searchExpense").value.toLowerCase();
+  const fp = document.getElementById("filterPerson").value;
+  const rows = t.expenses.filter(e => {
+    const hay = [e.item,e.category,e.payer,e.notes,(e.participants||[]).join(" ")].join(" ").toLowerCase();
+    return (!q || hay.includes(q)) && (!fp || e.payer===fp || (e.participants||[]).includes(fp));
+  });
+  document.getElementById("expenseRows").innerHTML = rows.map(e=>`
+    <tr>
+      <td>${escapeHtml(e.date||"")}</td><td>${escapeHtml(e.item)}</td><td>${money(amountHKD(e))}</td>
+      <td>${escapeHtml(e.currency)} ${Number(e.amount||0).toLocaleString()}</td>
+      <td>${escapeHtml(e.payer)}</td><td>${(e.participants||[]).map(p=>`<span class="pill">${escapeHtml(p)}</span>`).join(" ")}</td>
+      <td>${escapeHtml(e.category)}</td><td class="notes">${escapeHtml(e.notes)}</td>
+      <td><button class="small ghost" onclick="deleteExpense('${e.id}')">Delete</button></td>
+    </tr>`).join("") || `<tr><td colspan="9">No expenses yet.</td></tr>`;
+}
+
+function renderSettle(){
+  const t = trip(), c = calculations();
+  document.getElementById("settlementList").innerHTML = c.settlements.length ? c.settlements.map(s=>`
+    <div class="notice"><b>${escapeHtml(s.from)}</b> pays <b>${escapeHtml(s.to)}</b> ${money(s.amount)}</div>`).join("") : `<p>Everyone is settled.</p>`;
+  document.getElementById("ledgerRows").innerHTML = t.people.map(p=>{
+    const v = c.ledger[p];
+    return `<tr><td>${escapeHtml(p)}</td><td>${money(v.paid)}</td><td>${money(v.share)}</td><td><span class="pill ${v.balance>=0?'good':'bad'}">${money(v.balance)}</span></td></tr>`;
+  }).join("");
+}
+
+document.getElementById("newTripBtn").onclick=async()=>{ const n={id:crypto.randomUUID(),name:"New trip",people:["Person 1","Person 2"],expenses:[]}; state.trips.push(n); state.activeTripId=n.id; saveLocal(); render(); await save(); await startSharedTrip(n.id); };
+document.getElementById("tripSelect").onchange=e=>startSharedTrip(e.target.value);
+document.getElementById("saveTripBtn").onclick=()=>{ trip().name=document.getElementById("tripName").value.trim()||"Untitled trip"; document.querySelectorAll("[data-person-index]").forEach(inp=>trip().people[Number(inp.dataset.personIndex)] = inp.value.trim() || "Unnamed"); save(); render(); };
+document.getElementById("duplicateTripBtn").onclick=()=>{ const copy=structuredClone(trip()); copy.id=crypto.randomUUID(); copy.name += " copy"; state.trips.push(copy); state.activeTripId=copy.id; save(); render(); };
+document.getElementById("deleteTripBtn").onclick=()=>{ if(state.trips.length<=1) return alert("Keep at least one trip."); if(confirm("Delete this trip?")){ state.trips=state.trips.filter(t=>t.id!==state.activeTripId); state.activeTripId=state.trips[0].id; save(); render(); } };
+document.getElementById("copyTripLinkBtn").onclick=async()=>{ const url=new URL(location.href); url.searchParams.set("trip", state.activeTripId); await navigator.clipboard.writeText(url.toString()).catch(()=>prompt("Copy this link", url.toString())); setSyncStatus("Trip link copied."); };
+document.getElementById("addPersonBtn").onclick=()=>{ const name=document.getElementById("newPersonName").value.trim(); if(name && !trip().people.includes(name)){ trip().people.push(name); document.getElementById("newPersonName").value=""; save(); render(); } };
+window.removePerson=(i)=>{ const t=trip(); const name=t.people[i]; if(t.expenses.some(e=>e.payer===name || (e.participants||[]).includes(name))) return alert("This person is used in expenses. Delete or edit those expenses first."); t.people.splice(i,1); save(); render(); };
+document.getElementById("selectAllBtn").onclick=()=>document.querySelectorAll("#participantChecks input").forEach(x=>x.checked=true);
+document.getElementById("selectNoneBtn").onclick=()=>document.querySelectorAll("#participantChecks input").forEach(x=>x.checked=false);
+document.getElementById("addExpenseBtn").onclick=()=>{
+  const participants=[...document.querySelectorAll("#participantChecks input:checked")].map(x=>x.value);
+  const e={id:crypto.randomUUID(),date:expenseDate.value,item:expenseItem.value.trim()||"Untitled expense",amount:Number(expenseAmount.value),currency:expenseCurrency.value,fx:Number(expenseFx.value||1),payer:expensePayer.value,category:expenseCategory.value,participants,notes:expenseNotes.value.trim()};
+  if(!e.amount || !e.payer || !participants.length) return alert("Add an amount, payer, and at least one participant.");
+  trip().expenses.push(e); ["expenseItem","expenseAmount","expenseNotes"].forEach(id=>document.getElementById(id).value=""); save(); render();
+};
+window.deleteExpense=(id)=>{ trip().expenses=trip().expenses.filter(e=>e.id!==id); save(); render(); };
+document.querySelectorAll(".tab").forEach(btn=>btn.onclick=()=>{ document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); document.querySelectorAll(".tabPage").forEach(p=>p.classList.add("hidden")); document.getElementById(btn.dataset.tab).classList.remove("hidden"); });
+document.getElementById("searchExpense").oninput=renderExpenses;
+document.getElementById("filterPerson").onchange=renderExpenses;
+document.getElementById("exportJsonBtn").onclick=()=>download("trip-split-data.json", JSON.stringify(state,null,2), "application/json");
+document.getElementById("exportCsvBtn").onclick=()=>{
+  const rows=[["Trip","Date","Item","HKD","Amount","Currency","FX","Payer","Category","Participants","Notes"]];
+  for(const e of trip().expenses) rows.push([trip().name,e.date,e.item,amountHKD(e),e.amount,e.currency,e.fx,e.payer,e.category,(e.participants||[]).join("|"),e.notes]);
+  download("trip-expenses.csv", rows.map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n"), "text/csv");
+};
+document.getElementById("importJsonInput").onchange=e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{ try{ const imported=JSON.parse(reader.result); if(!imported.trips) throw new Error(); state=imported; save(); render(); } catch{ alert("Invalid JSON export."); } };
+  reader.readAsText(file);
+};
+function download(filename, content, type){
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([content],{type})); a.download=filename; a.click(); URL.revokeObjectURL(a.href);
+}
+expenseDate.valueAsDate = new Date();
+startSharedTrip(urlTripId() || state.activeTripId);
+</script>
+</body>
+</html>
