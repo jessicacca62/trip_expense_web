@@ -1,4 +1,4 @@
-export const firebaseConfig = {
+window.firebaseConfig = {
   apiKey: "AIzaSyBlGAWVLfQsbV4jj5CZi-Q5zQMMlyCWHTU",
   authDomain: "trip-split-7b63d.firebaseapp.com",
   projectId: "trip-split-7b63d",
