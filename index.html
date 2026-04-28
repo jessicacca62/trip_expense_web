@@ -28,7 +28,7 @@
     .view{display:none}.view.active{display:block}.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:rgba(255,255,255,.94);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 8px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}
     .tab{background:transparent;color:var(--muted);padding:7px 2px;min-height:50px;border-radius:14px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}.tab.active{background:var(--primary-soft);color:var(--primary)}.tab span:first-child{font-size:19px;line-height:1}
     .expense-card,.settle-card{border:1px solid var(--line);border-radius:16px;padding:13px;margin:10px 0;background:#fff}.expense-main{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.expense-title{font-weight:950;font-size:16px}.amount{font-weight:950;white-space:nowrap}.expense-meta{color:var(--muted);font-size:12px;line-height:1.45;margin-top:4px}
-    .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.chip{border-radius:999px;padding:8px 10px;border:1px solid var(--line);background:#fff;color:var(--text);font-size:13px;cursor:pointer}.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.chip{border-radius:999px;padding:8px 10px;border:1px solid var(--line);background:#fff;color:var(--text);font-size:13px;cursor:pointer}.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}.section-box{border:1px solid var(--line);border-radius:16px;padding:10px;margin:10px 0;background:#fff}.section-title{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:8px}.full-btn{width:100%;margin-top:10px}
     .row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:11px 0;align-items:center}.row:last-child{border-bottom:0}.positive{color:var(--ok);font-weight:950}.negative{color:var(--danger);font-weight:950}.muted{color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:24px 10px}
     .toast{position:fixed;left:14px;right:14px;bottom:86px;background:#111827;color:#fff;border-radius:16px;padding:13px 14px;z-index:99;display:none;box-shadow:var(--shadow)}.toast.show{display:block}
     .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:50;display:none;align-items:flex-end}.modal-backdrop.show{display:flex}.modal{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:880px;margin:0 auto;padding:18px 14px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
@@ -41,7 +41,7 @@
 
   <section id="dashboardView" class="view active">
     <div class="card"><h2>Dashboard</h2><div class="grid3"><div class="metric"><div class="label">Total spent</div><div class="value" id="metricTotal">0.00</div></div><div class="metric"><div class="label">Expenses</div><div class="value" id="metricCount">0</div></div><div class="metric"><div class="label">Base</div><div class="value" id="metricCurrency">HKD</div></div></div></div>
-    <div class="card"><div class="top-row"><h2>Quick Add</h2><button class="small ghost" id="openManualBtn">Manual</button></div><div class="quick-box"><input id="quickInput" placeholder="THB 120 dinner Jess all" autocomplete="off" /><button id="quickAddBtn">Add</button></div><div class="hint">Examples: <b>THB 120 dinner Jess all</b>, <b>HKD 300 taxi Matt Jess,Amy</b>. If currency is omitted, base currency is used.</div></div>
+    <div class="card"><div class="top-row"><h2>Quick Add</h2><button class="small ghost" id="openManualBtn">Manual</button></div><div id="quickFormDash"></div></div>
     <div class="card"><h2>Recent Expenses</h2><div id="recentList" class="empty">No expenses yet.</div></div>
     <div class="card"><h2>Balances</h2><div id="dashboardBalances" class="empty">No balances yet.</div></div>
   </section>
@@ -50,7 +50,7 @@
 
   <section id="settleView" class="view"><div class="card"><h2>Settle Up</h2><div id="settleList" class="empty">All settled.</div></div><div class="card"><h2>Balances by Person</h2><div id="summaryList" class="empty">No data yet.</div></div></section>
 
-  <section id="quickView" class="view"><div class="card"><h2>Quick Add</h2><div class="quick-box"><input id="quickInput2" placeholder="THB 120 dinner Jess all" autocomplete="off" /><button id="quickAddBtn2">Add</button></div><div class="hint">Format: currency + amount + item + payer + split. Currency can be THB, HKD, USD, TWD, JPY, etc.</div></div></section>
+  <section id="quickView" class="view"><div class="card"><h2>Quick Add</h2><div id="quickFormPage"></div></div></section>
 
   <section id="settingsView" class="view">
     <div class="card"><h2>Trip</h2><label>Trip name</label><input id="tripNameInput" placeholder="Bangkok 2026" /><div class="grid"><div><label>Base currency</label><select id="baseCurrencySelect"></select></div><div><label>Default expense currency</label><select id="defaultCurrencySelect"></select></div></div><button id="saveTripBtn" style="margin-top:10px;width:100%">Save Trip Settings</button></div>
@@ -73,12 +73,7 @@
 <div class="modal-backdrop" id="manualModal">
   <div class="modal">
     <div class="top-row"><h2 style="margin:0">Add Expense</h2><button class="small ghost" id="closeManualBtn">Close</button></div>
-    <label>Description</label><input id="descInput" placeholder="Dinner" />
-    <div class="grid"><div><label>Amount</label><input id="amountInput" type="number" inputmode="decimal" placeholder="120" /></div><div><label>Currency</label><select id="currencySelect"></select></div></div>
-    <div class="grid"><div><label>FX to base</label><input id="fxInput" type="number" inputmode="decimal" step="0.000001" placeholder="0.22" /></div><div><label>Paid by</label><select id="payerSelect"></select></div></div>
-    <div class="hint" id="convertedHint">Converted amount: 0.00</div>
-    <label>Split with</label><div id="splitChips" class="chip-row"></div>
-    <button id="saveExpenseBtn" style="width:100%;margin-top:14px">Save Expense</button>
+    <div id="manualForm"></div>
   </div>
 </div>
 
@@ -138,36 +133,106 @@ function renderFxInputs(){
   box.querySelectorAll("[data-fx]").forEach(inp=>inp.addEventListener("change",async()=>{const cur=inp.dataset.fx;state.fxRates[cur]=Number(inp.value)||1;await saveTripMeta();render()}));
   box.querySelectorAll("[data-setbase]").forEach(btn=>btn.addEventListener("click",async()=>{state.baseCurrency=btn.dataset.setbase;state.fxRates[state.baseCurrency]=1;await saveTripMeta();render();toast("Base currency updated")}));
 }
-function updateConvertedHint(){const amt=Number(el("amountInput").value)||0;const cur=el("currencySelect").value||state.defaultCurrency;const fx=Number(el("fxInput").value)||rateFor(cur);el("convertedHint").textContent=`Converted amount: ${formatMoney(amt*fx)} ${state.baseCurrency}`;}
-function openManual(){renderPayerSelect();renderSplitChips();renderSelectOptions(el("currencySelect"),state.defaultCurrency);el("fxInput").value=rateFor(el("currencySelect").value);updateConvertedHint();el("manualModal").classList.add("show")}
 
-function expenseCard(e){const date=e.createdAt?new Date(e.createdAt).toLocaleDateString():"";const base=amountBase(e);return `<div class="expense-card"><div class="expense-main"><div><div class="expense-title">${escapeHtml(e.description)}</div><div class="expense-meta">${date} · Paid by <b>${escapeHtml(e.payer)}</b><br>${escapeHtml(e.currency||state.baseCurrency)} ${formatMoney(e.amount)} × FX ${formatMoney(e.fxRate||1)} = <b>${formatMoney(base)} ${escapeHtml(state.baseCurrency)}</b><br>Split: ${escapeHtml((e.splitWith||[]).join(", "))}</div></div><div style="text-align:right"><div class="amount">${formatMoney(base)} ${escapeHtml(state.baseCurrency)}</div><button class="small danger" onclick="deleteExpense('${e.id}')">Delete</button></div></div></div>`}
-function balances(){const bal={};state.people.forEach(p=>bal[p]=0);state.expenses.forEach(e=>{const amt=amountBase(e);const split=(e.splitWith&&e.splitWith.length)?e.splitWith:state.people;const share=amt/split.length;bal[e.payer]=(bal[e.payer]||0)+amt;split.forEach(p=>bal[p]=(bal[p]||0)-share)});return bal}
-function settlementsFromBalances(bal){const debtors=[],creditors=[];Object.entries(bal).forEach(([person,amount])=>{const rounded=Math.round(amount*100)/100;if(rounded<-0.01)debtors.push({person,amount:-rounded});if(rounded>0.01)creditors.push({person,amount:rounded})});debtors.sort((a,b)=>b.amount-a.amount);creditors.sort((a,b)=>b.amount-a.amount);const out=[];let i=0,j=0;while(i<debtors.length&&j<creditors.length){const pay=Math.min(debtors[i].amount,creditors[j].amount);out.push({from:debtors[i].person,to:creditors[j].person,amount:Math.round(pay*100)/100});debtors[i].amount-=pay;creditors[j].amount-=pay;if(debtors[i].amount<0.01)i++;if(creditors[j].amount<0.01)j++}return out}
-function render(){
-  el("tripTitle").textContent=state.tripName||"Trip Expense";el("tripNameInput").value=state.tripName||"";
-  renderSelectOptions(el("baseCurrencySelect"),state.baseCurrency);renderSelectOptions(el("defaultCurrencySelect"),state.defaultCurrency);
-  const total=state.expenses.reduce((s,e)=>s+amountBase(e),0);el("metricTotal").textContent=formatMoney(total);el("metricCount").textContent=state.expenses.length;el("metricCurrency").textContent=state.baseCurrency;
-  renderPeople();renderPayerSelect();renderSplitChips();renderFxInputs();
-  const sorted=sortedExpenses();const q=(el("expenseSearch").value||"").toLowerCase();const filtered=sorted.filter(e=>!q||String(e.description).toLowerCase().includes(q)||String(e.payer).toLowerCase().includes(q)||String(e.currency).toLowerCase().includes(q)||(e.splitWith||[]).join(",").toLowerCase().includes(q));
-  el("recentList").innerHTML=sorted.slice(0,4).length?sorted.slice(0,4).map(expenseCard).join(""):`<div class="empty">No expenses yet.</div>`;
-  el("expenseList").innerHTML=filtered.length?filtered.map(expenseCard).join(""):`<div class="empty">No matching expenses.</div>`;
-  const bal=balances();const balHtml=Object.entries(bal).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`<div class="row"><strong>${escapeHtml(p)}</strong><span class="${a>=0?'positive':'negative'}">${a>=0?'+':''}${formatMoney(a)} ${escapeHtml(state.baseCurrency)}</span></div>`).join("");
-  el("summaryList").innerHTML=balHtml||`<div class="empty">No data yet.</div>`;el("dashboardBalances").innerHTML=balHtml||`<div class="empty">No balances yet.</div>`;
-  const settle=settlementsFromBalances(bal);
-  el("settleList").innerHTML=settle.length?settle.map(s=>`<div class="settle-card"><div class="top-row"><div><b>${escapeHtml(s.from)} → ${escapeHtml(s.to)}</b><div class="expense-meta">${escapeHtml(s.from)} should pay ${escapeHtml(s.to)}</div></div><div class="amount">${formatMoney(s.amount)} ${escapeHtml(state.baseCurrency)}</div></div></div>`).join(""):`<div class="empty">All settled.</div>`;
+function chipsHTML(kind, activeAll=true){
+  return state.people.map((p,i)=>`<button type="button" class="chip ${kind==='payer'?(i===0?'active':''):(activeAll?'active':'')}" data-person="${escapeHtml(p)}">${escapeHtml(p)}</button>`).join("");
 }
-async function quickAddFrom(inputId){try{const exp=parseQuick(el(inputId).value);await addExpense(exp);el(inputId).value="";toast("Expense added")}catch(err){toast(err.message)}}
-el("quickAddBtn").onclick=()=>quickAddFrom("quickInput");el("quickAddBtn2").onclick=()=>quickAddFrom("quickInput2");
-["quickInput","quickInput2","personInput"].forEach(id=>el(id).addEventListener("keydown",e=>{if(e.key==="Enter"){if(id==="quickInput")el("quickAddBtn").click();if(id==="quickInput2")el("quickAddBtn2").click();if(id==="personInput")el("addPersonBtn").click()}}));
+function structuredFormHTML(prefix){
+  return `
+    <label>Description</label><input id="${prefix}Desc" placeholder="Dinner / taxi / hotel" />
+    <div class="grid">
+      <div><label>Currency</label><select id="${prefix}Currency"></select></div>
+      <div><label>Amount</label><input id="${prefix}Amount" type="number" inputmode="decimal" placeholder="120" /></div>
+    </div>
+    <label>FX to base</label><input id="${prefix}Fx" type="number" inputmode="decimal" step="0.000001" />
+    <div class="hint" id="${prefix}Converted">Converted amount: 0.00 ${escapeHtml(state.baseCurrency)}</div>
+    <div class="section-box">
+      <div class="section-title">Paid by — choose one</div>
+      <div class="chip-row" id="${prefix}Payer">${chipsHTML('payer')}</div>
+    </div>
+    <div class="section-box">
+      <div class="top-row"><div class="section-title">Split with — choose one or more</div><button type="button" class="small ghost" id="${prefix}AllBtn">All</button></div>
+      <div class="chip-row" id="${prefix}Split">${chipsHTML('split', true)}</div>
+    </div>
+    <button id="${prefix}Save" class="full-btn">Add Expense</button>
+  `;
+}
+function setupStructuredForm(prefix, containerId, closeAfterSave=false){
+  const container = el(containerId);
+  if(!container) return;
+  container.innerHTML = structuredFormHTML(prefix);
+  renderSelectOptions(el(prefix+"Currency"), state.defaultCurrency);
+  el(prefix+"Fx").value = rateFor(el(prefix+"Currency").value);
+
+  const updateHint = () => {
+    const amount = Number(el(prefix+"Amount").value) || 0;
+    const fx = Number(el(prefix+"Fx").value) || rateFor(el(prefix+"Currency").value);
+    el(prefix+"Converted").textContent = `Converted amount: ${formatMoney(amount * fx)} ${state.baseCurrency}`;
+  };
+
+  el(prefix+"Currency").onchange = () => {
+    el(prefix+"Fx").value = rateFor(el(prefix+"Currency").value);
+    updateHint();
+  };
+  el(prefix+"Amount").oninput = updateHint;
+  el(prefix+"Fx").oninput = updateHint;
+
+  el(prefix+"Payer").querySelectorAll(".chip").forEach(chip => {
+    chip.onclick = () => {
+      el(prefix+"Payer").querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+    };
+  });
+
+  el(prefix+"Split").querySelectorAll(".chip").forEach(chip => {
+    chip.onclick = () => chip.classList.toggle("active");
+  });
+
+  el(prefix+"AllBtn").onclick = () => {
+    el(prefix+"Split").querySelectorAll(".chip").forEach(c => c.classList.add("active"));
+  };
+
+  el(prefix+"Save").onclick = async () => saveStructuredExpense(prefix, closeAfterSave);
+  updateHint();
+}
+async function saveStructuredExpense(prefix, closeAfterSave){
+  const description = el(prefix+"Desc").value.trim();
+  const amount = Number(el(prefix+"Amount").value);
+  const currency = el(prefix+"Currency").value;
+  const fxRate = Number(el(prefix+"Fx").value) || 1;
+  const payer = el(prefix+"Payer").querySelector(".chip.active")?.dataset.person;
+  const splitWith = [...el(prefix+"Split").querySelectorAll(".chip.active")].map(c => c.dataset.person);
+
+  if(!description) return toast("Enter a description.");
+  if(!amount || amount <= 0) return toast("Enter a valid amount.");
+  if(!payer) return toast("Choose who paid.");
+  if(!splitWith.length) return toast("Choose at least one split person.");
+
+  state.fxRates[currency] = fxRate;
+  await saveTripMeta();
+  await addExpense({id:uuid(),amount,description,currency,fxRate,baseAmount:amount*fxRate,payer,splitWith,createdAt:Date.now()});
+
+  el(prefix+"Desc").value = "";
+  el(prefix+"Amount").value = "";
+  if(closeAfterSave) el("manualModal").classList.remove("show");
+  toast("Expense added");
+  render();
+}
+function openManual(){
+  setupStructuredForm("manual", "manualForm", true);
+  el("manualModal").classList.add("show");
+}
+el("openManualBtn").onclick=openManual;
+el("openManualBtn2").onclick=openManual;
+el("closeManualBtn").onclick=()=>el("manualModal").classList.remove("show");
+
 el("expenseSearch").addEventListener("input",render);
-el("openManualBtn").onclick=openManual;el("openManualBtn2").onclick=openManual;el("closeManualBtn").onclick=()=>el("manualModal").classList.remove("show");
-el("currencySelect").addEventListener("change",()=>{el("fxInput").value=rateFor(el("currencySelect").value);updateConvertedHint()});el("amountInput").addEventListener("input",updateConvertedHint);el("fxInput").addEventListener("input",updateConvertedHint);
-el("saveExpenseBtn").onclick=async()=>{const amount=Number(el("amountInput").value);const description=el("descInput").value.trim();const currency=el("currencySelect").value;const fxRate=Number(el("fxInput").value)||1;const payer=el("payerSelect").value;const splitWith=[...document.querySelectorAll("#splitChips .chip.active")].map(c=>c.dataset.person);if(!amount||amount<=0)return toast("Enter a valid amount.");if(!description)return toast("Enter a description.");if(!payer)return toast("Choose payer.");if(!splitWith.length)return toast("Choose at least one split person.");state.fxRates[currency]=fxRate;await saveTripMeta();await addExpense({id:uuid(),amount,description,currency,fxRate,baseAmount:amount*fxRate,payer,splitWith,createdAt:Date.now()});el("amountInput").value="";el("descInput").value="";el("manualModal").classList.remove("show");toast("Expense added")};
 el("addPersonBtn").onclick=async()=>{const name=normalizeName(el("personInput").value);if(!name)return;if(state.people.some(p=>p.toLowerCase()===name.toLowerCase()))return toast("Person already exists.");state.people.push(name);el("personInput").value="";await saveTripMeta();render()};
+el("personInput").addEventListener("keydown",e=>{if(e.key==="Enter")el("addPersonBtn").click()});
 el("saveTripBtn").onclick=async()=>{state.tripName=el("tripNameInput").value.trim()||"Trip Expense";state.baseCurrency=el("baseCurrencySelect").value;state.defaultCurrency=el("defaultCurrencySelect").value;state.fxRates[state.baseCurrency]=1;await saveTripMeta();render();toast("Trip settings saved")};
 el("shareBtn").onclick=el("copyLinkBtn").onclick=async()=>{try{await navigator.clipboard.writeText(location.href);toast("Trip link copied")}catch{prompt("Copy trip link:",location.href)}};
 el("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify({tripId,...state},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(state.tripName||"trip").replace(/[^a-z0-9]+/gi,"-").toLowerCase()+".json";a.click();URL.revokeObjectURL(a.href)};
+
 async function initFirebase(){try{if(!window.firebaseConfig||!window.firebaseConfig.apiKey||window.firebaseConfig.apiKey.includes("PASTE"))throw new Error("Missing Firebase config");firebase.initializeApp(window.firebaseConfig);auth=firebase.auth();db=firebase.firestore();await auth.signInAnonymously();setStatus("Connected · shared editing on");tripRef=db.collection("trips").doc(tripId);tripRef.onSnapshot(async doc=>{if(!doc.exists){await tripRef.set({tripName:state.tripName,people:state.people,baseCurrency:state.baseCurrency,defaultCurrency:state.defaultCurrency,fxRates:state.fxRates,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return}const data=doc.data();state.tripName=data.tripName||state.tripName;state.people=data.people||state.people;state.baseCurrency=data.baseCurrency||state.baseCurrency;state.defaultCurrency=data.defaultCurrency||state.defaultCurrency;state.fxRates={...state.fxRates,...(data.fxRates||{})};render()});tripRef.collection("expenses").onSnapshot(snapshot=>{state.expenses=snapshot.docs.map(d=>({id:d.id,...d.data()}));render()},err=>setStatus("Firestore error: "+err.message))}catch(err){setStatus("Local fallback: "+err.message);const saved=localStorage.getItem("trip-"+tripId);if(saved){try{state=JSON.parse(saved)}catch{}}render()}}
 initFirebase();
 </script>
