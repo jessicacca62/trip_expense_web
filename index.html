@@ -1,12 +1,1708 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trip Expense Split</title>
-<script>window.onerror=(m,s,l)=>{const e=document.getElementById('status');if(e)e.textContent='JS error: '+m+' line '+l}</script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script><script src="firebase-config.js"></script>
-<style>:root{--b:#f6f7fb;--c:#fff;--t:#172033;--m:#6b7280;--l:#e5e7eb;--p:#2563eb;--s:#dbeafe;--d:#dc2626;--g:#059669}*{box-sizing:border-box}body{margin:0;background:var(--b);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--t)}.app{max-width:880px;margin:auto;padding:14px 14px 92px}header{position:sticky;top:0;background:rgba(246,247,251,.94);backdrop-filter:blur(12px);z-index:5;padding:8px 0 12px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:22px;margin:4px 0 2px}h2{font-size:18px;margin:0 0 10px}.status,.hint,.meta{font-size:12px;color:var(--m);line-height:1.45}.card,.expense,.settle,.box{background:#fff;border:1px solid var(--l);border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 8px 18px rgba(15,23,42,.06)}input,select,button{font:inherit}input,select{width:100%;border:1px solid var(--l);border-radius:14px;padding:13px 12px;background:#fff;font-size:16px}button{border:0;border-radius:14px;padding:12px 14px;font-weight:800;background:var(--p);color:#fff;min-height:44px}.ghost{background:#fff;color:var(--t);border:1px solid var(--l)}.danger{background:#fee2e2;color:var(--d)}.small{min-height:34px;padding:7px 10px;font-size:13px}.pill{border-radius:999px;background:var(--s);color:var(--p);font-size:12px;padding:8px 11px}label{display:block;color:var(--m);font-size:12px;font-weight:800;margin:8px 0 5px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.metric{background:#f8fafc;border:1px solid var(--l);border-radius:16px;padding:12px}.metric .label{color:var(--m);font-size:12px;font-weight:800}.metric .value{font-size:20px;font-weight:950;margin-top:4px}.view{display:none}.view.active{display:block}.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);border-top:1px solid var(--l);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 8px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}.tab{background:transparent;color:var(--m);font-size:11px;display:flex;flex-direction:column;gap:3px;align-items:center;padding:7px 2px;border-radius:14px}.tab.active{background:var(--s);color:var(--p)}.tab span:first-child{font-size:19px}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.chip{border:1px solid var(--l);background:#fff;color:var(--t);border-radius:999px;padding:9px 11px;font-size:14px}.chip.active{background:var(--p);color:#fff;border-color:var(--p)}.expense-main{display:flex;justify-content:space-between;gap:12px}.title,.amount{font-weight:950}.amount{white-space:nowrap}.row{display:flex;justify-content:space-between;border-bottom:1px solid var(--l);padding:11px 0}.row:last-child{border-bottom:0}.positive{color:var(--g);font-weight:950}.negative{color:var(--d);font-weight:950}.empty{text-align:center;color:var(--m);padding:24px 10px}.toast{position:fixed;left:14px;right:14px;bottom:86px;background:#111827;color:#fff;border-radius:16px;padding:13px 14px;z-index:99;display:none}.toast.show{display:block}.modalWrap{position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;align-items:flex-end;z-index:50}.modalWrap.show{display:flex}.modal{background:#fff;width:100%;max-width:880px;margin:0 auto;border-radius:22px 22px 0 0;padding:18px 14px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}@media(min-width:760px){.tabs{max-width:880px;margin:auto;border-left:1px solid var(--l);border-right:1px solid var(--l);border-radius:22px 22px 0 0}.modalWrap{align-items:center}.modal{border-radius:22px;padding:22px}}</style></head><body>
-<div class="app"><header><div class="top"><div><h1 id="tripTitle">Trip Expense</h1><div id="status" class="status">Starting…</div></div><button id="shareBtn" class="pill">Share</button></div></header>
-<section id="dashboard" class="view active"><div class="card"><h2>Dashboard</h2><div class="grid3"><div class="metric"><div class="label">Total spent</div><div id="metricTotal" class="value">0.00</div></div><div class="metric"><div class="label">Expenses</div><div id="metricCount" class="value">0</div></div><div class="metric"><div class="label">Base</div><div id="metricCurrency" class="value">HKD</div></div></div></div><div class="card"><h2>Quick Add</h2><div id="quickDash"></div></div><div class="card"><h2>Recent Expenses</h2><div id="recentList"></div></div><div class="card"><h2>Balances</h2><div id="dashboardBalances"></div></div></section>
-<section id="expenses" class="view"><div class="card"><h2>Expenses</h2><input id="search" placeholder="Search expense / payer / currency"><div id="expenseList"></div></div></section><section id="settle" class="view"><div class="card"><h2>Settle Up</h2><div id="settleList"></div></div><div class="card"><h2>Balances by Person</h2><div id="summaryList"></div></div></section><section id="quick" class="view"><div class="card"><h2>Quick Add</h2><div id="quickPage"></div></div></section>
-<section id="setup" class="view"><div class="card"><h2>Trip</h2><label>Trip name</label><input id="tripNameInput"><div class="grid"><div><label>Base currency</label><select id="baseCurrency"></select></div><div><label>Default expense currency</label><select id="defaultCurrency"></select></div></div><button id="saveTrip" style="width:100%;margin-top:10px">Save Trip Settings</button></div><div class="card"><h2>FX Rates</h2><div id="fxInputs"></div><div class="hint">Rate means: 1 unit of that currency equals how many units of your base currency.</div></div><div class="card"><h2>People</h2><div class="grid"><input id="personInput" placeholder="Add person"><button id="addPerson">Add</button></div><div id="peopleList" class="chips"></div></div><div class="card"><h2>Data</h2><div class="grid"><button id="exportBtn">Export JSON</button><button id="copyLink" class="ghost">Copy Link</button></div></div></section></div>
-<nav class="tabs"><button class="tab active" data-view="dashboard"><span>🏠</span><span>Dashboard</span></button><button class="tab" data-view="expenses"><span>🧾</span><span>Expenses</span></button><button class="tab" data-view="settle"><span>⚖️</span><span>Settle</span></button><button class="tab" data-view="quick"><span>＋</span><span>Quick</span></button><button class="tab" data-view="setup"><span>⚙️</span><span>Setup</span></button></nav><div id="editWrap" class="modalWrap"><div class="modal"><div class="top"><h2>Edit expense</h2><button id="closeEdit" class="small ghost">Close</button></div><div id="editForm"></div></div></div><div id="toast" class="toast"></div>
-<script>
-const CURRENCIES=['HKD','THB','USD','TWD','JPY','CNY','SGD','EUR','GBP','AUD','KRW','MYR'];let tripId=new URLSearchParams(location.search).get('trip'),tripRef=null,db=null;let state={tripName:'Trip Expense',people:['Jess','Amy','Matt'],baseCurrency:'HKD',defaultCurrency:'THB',fxRates:{HKD:1,THB:.22,USD:7.8,TWD:.24,JPY:.052,CNY:1.08,SGD:5.8,EUR:8.5,GBP:9.9,AUD:5.1,KRW:.0057,MYR:1.65},expenses:[]};const $=id=>document.getElementById(id);function uuid(){return crypto.randomUUID?crypto.randomUUID():'id'+Date.now()+Math.random().toString(36).slice(2)}if(!tripId){tripId=uuid();const u=new URL(location.href);u.searchParams.set('trip',tripId);history.replaceState(null,'',u)}function today(){return new Date().toISOString().slice(0,10)}function expenseDate(e){return e.date||(e.createdAt?new Date(e.createdAt).toISOString().slice(0,10):today())}function status(t){$('status').textContent=t}function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2300)}function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}function money(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}function rate(c){return c===state.baseCurrency?1:Number(state.fxRates[c]||1)}function baseAmt(e){return Number(e.baseAmount??(Number(e.amount||0)*Number(e.fxRate||1)))}function currencies(){return[...new Set([state.baseCurrency,state.defaultCurrency,...CURRENCIES])]}function fillSelect(id,val){const s=$(id);if(!s)return;s.innerHTML=currencies().map(c=>`<option ${c===val?'selected':''}>${c}</option>`).join('')}function peopleChips(mode,e={}){return state.people.map((p,i)=>`<button type="button" class="chip ${(mode==='payer'?(p===(e.payer||state.people[0])):((e.splitWith||state.people).includes(p)))?'active':''}" data-person="${esc(p)}">${esc(p)}</button>`).join('')}function formHtml(prefix,e={}){return `<label>Date</label><input id="${prefix}Date" type="date" value="${esc(expenseDate(e))}"><label>Description</label><input id="${prefix}Desc" placeholder="Dinner / taxi / hotel" value="${esc(e.description||'')}"><div class="grid"><div><label>Currency</label><select id="${prefix}Currency"></select></div><div><label>Amount</label><input id="${prefix}Amount" type="number" inputmode="decimal" placeholder="120" value="${esc(e.amount||'')}"></div></div><label>FX to base</label><input id="${prefix}Fx" type="number" inputmode="decimal" step="0.000001" value="${esc(e.fxRate||'')}"><div id="${prefix}Converted" class="hint">Converted amount: 0.00 ${esc(state.baseCurrency)}</div><div class="box"><div class="hint"><b>Paid by — choose one</b></div><div id="${prefix}Payer" class="chips">${peopleChips('payer',e)}</div></div><div class="box"><div class="top"><div class="hint"><b>Split with — choose one or more</b></div><button type="button" class="small ghost" id="${prefix}All">All</button></div><div id="${prefix}Split" class="chips">${peopleChips('split',e)}</div></div><button id="${prefix}Save" style="width:100%;margin-top:10px">${e.id?'Save Changes':'Add Expense'}</button>`}function setupForm(prefix,containerId,e={}){const box=$(containerId);if(!box)return;box.innerHTML=formHtml(prefix,e);fillSelect(prefix+'Currency',e.currency||state.defaultCurrency);if(!$(prefix+'Fx').value)$(prefix+'Fx').value=rate($(prefix+'Currency').value);const upd=()=>{$(prefix+'Converted').textContent=`Converted amount: ${money((Number($(prefix+'Amount').value)||0)*(Number($(prefix+'Fx').value)||rate($(prefix+'Currency').value)))} ${state.baseCurrency}`};$(prefix+'Currency').onchange=()=>{$(prefix+'Fx').value=rate($(prefix+'Currency').value);upd()};$(prefix+'Amount').oninput=upd;$(prefix+'Fx').oninput=upd;[...$(prefix+'Payer').querySelectorAll('.chip')].forEach(ch=>ch.onclick=()=>{[...$(prefix+'Payer').querySelectorAll('.chip')].forEach(c=>c.classList.remove('active'));ch.classList.add('active')});[...$(prefix+'Split').querySelectorAll('.chip')].forEach(ch=>ch.onclick=()=>ch.classList.toggle('active'));$(prefix+'All').onclick=()=>[...$(prefix+'Split').querySelectorAll('.chip')].forEach(c=>c.classList.add('active'));$(prefix+'Save').onclick=()=>saveExpense(prefix,e.id);upd()}function collect(prefix,id){const description=$(prefix+'Desc').value.trim(),amount=Number($(prefix+'Amount').value),currency=$(prefix+'Currency').value,fxRate=Number($(prefix+'Fx').value)||1,date=$(prefix+'Date').value||today(),payer=$(prefix+'Payer').querySelector('.chip.active')?.dataset.person,splitWith=[...$(prefix+'Split').querySelectorAll('.chip.active')].map(c=>c.dataset.person);if(!description)throw Error('Enter a description');if(!amount||amount<=0)throw Error('Enter amount');if(!payer)throw Error('Choose who paid');if(!splitWith.length)throw Error('Choose split people');return{id:id||uuid(),date,description,amount,currency,fxRate,baseAmount:amount*fxRate,payer,splitWith,updatedAt:Date.now()}}async function saveExpense(prefix,id){try{const exp=collect(prefix,id);state.fxRates[exp.currency]=exp.fxRate;await saveMeta();if(id){if(tripRef)await tripRef.collection('expenses').doc(id).set(exp,{merge:true});else state.expenses=state.expenses.map(e=>e.id===id?{...e,...exp}:e);$('editWrap').classList.remove('show');toast('Expense updated')}else{exp.createdAt=Date.now();if(tripRef)await tripRef.collection('expenses').doc(exp.id).set(exp);else state.expenses.unshift(exp);$(prefix+'Desc').value='';$(prefix+'Amount').value='';$(prefix+'Date').value=today();toast('Expense added')}if(!tripRef){localStorage.setItem('trip-'+tripId,JSON.stringify(state));render()}}catch(e){toast(e.message)}}async function saveMeta(){const data={tripName:state.tripName,people:state.people,baseCurrency:state.baseCurrency,defaultCurrency:state.defaultCurrency,fxRates:state.fxRates,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};if(tripRef)await tripRef.set(data,{merge:true});else localStorage.setItem('trip-'+tripId,JSON.stringify(state))}window.deleteExpense=async id=>{if(!confirm('Delete this expense?'))return;if(tripRef)await tripRef.collection('expenses').doc(id).delete();else{state.expenses=state.expenses.filter(e=>e.id!==id);localStorage.setItem('trip-'+tripId,JSON.stringify(state));render()}};window.editExpense=id=>{const e=state.expenses.find(x=>x.id===id);if(!e)return;setupForm('edit','editForm',e);$('editWrap').classList.add('show')};function balances(){const b={};state.people.forEach(p=>b[p]=0);state.expenses.forEach(e=>{const a=baseAmt(e),split=e.splitWith?.length?e.splitWith:state.people,share=a/split.length;b[e.payer]=(b[e.payer]||0)+a;split.forEach(p=>b[p]=(b[p]||0)-share)});return b}function settlements(b){const d=[],c=[];Object.entries(b).forEach(([p,a])=>{a=Math.round(a*100)/100;if(a<-.01)d.push({p,a:-a});if(a>.01)c.push({p,a})});d.sort((x,y)=>y.a-x.a);c.sort((x,y)=>y.a-x.a);const out=[];let i=0,j=0;while(i<d.length&&j<c.length){let pay=Math.min(d[i].a,c[j].a);out.push({from:d[i].p,to:c[j].p,amount:Math.round(pay*100)/100});d[i].a-=pay;c[j].a-=pay;if(d[i].a<.01)i++;if(c[j].a<.01)j++}return out}function expenseCard(e){const base=baseAmt(e);return `<div class="expense"><div class="expense-main"><div><div class="title">${esc(e.description)}</div><div class="meta">${esc(expenseDate(e))} · Paid by <b>${esc(e.payer)}</b><br>${esc(e.currency)} ${money(e.amount)} × FX ${money(e.fxRate)} = <b>${money(base)} ${esc(state.baseCurrency)}</b><br>Split: ${esc((e.splitWith||[]).join(', '))}</div></div><div style="text-align:right"><div class="amount">${money(base)} ${esc(state.baseCurrency)}</div><button class="small ghost" onclick="editExpense('${e.id}')">Edit</button> <button class="small danger" onclick="deleteExpense('${e.id}')">Delete</button></div></div></div>`}function render(){ $('tripTitle').textContent=state.tripName;$('tripNameInput').value=state.tripName;$('metricCurrency').textContent=state.baseCurrency;fillSelect('baseCurrency',state.baseCurrency);fillSelect('defaultCurrency',state.defaultCurrency);$('metricTotal').textContent=money(state.expenses.reduce((s,e)=>s+baseAmt(e),0));$('metricCount').textContent=state.expenses.length;setupForm('dash','quickDash');setupForm('quick','quickPage');$('peopleList').innerHTML=state.people.map(p=>`<button class="chip" data-remove="${esc(p)}">${esc(p)} ×</button>`).join('');[...$('peopleList').querySelectorAll('[data-remove]')].forEach(b=>b.onclick=async()=>{if(state.people.length<=1)return toast('Keep at least one person');state.people=state.people.filter(p=>p!==b.dataset.remove);await saveMeta();render()});$('fxInputs').innerHTML=currencies().map(c=>`<div class="grid"><div><label>${esc(c)} to ${esc(state.baseCurrency)}</label><input data-fx="${esc(c)}" type="number" step="0.000001" value="${c===state.baseCurrency?1:rate(c)}" ${c===state.baseCurrency?'disabled':''}></div><div style="display:flex;align-items:end"><button class="small ghost" data-base="${esc(c)}" style="width:100%">Set as base</button></div></div>`).join('');[...$('fxInputs').querySelectorAll('[data-fx]')].forEach(i=>i.onchange=async()=>{state.fxRates[i.dataset.fx]=Number(i.value)||1;await saveMeta();render()});[...$('fxInputs').querySelectorAll('[data-base]')].forEach(b=>b.onclick=async()=>{state.baseCurrency=b.dataset.base;state.fxRates[state.baseCurrency]=1;await saveMeta();render()});const sorted=[...state.expenses].sort((a,b)=>expenseDate(b).localeCompare(expenseDate(a))||(b.createdAt||0)-(a.createdAt||0)),q=($('search').value||'').toLowerCase(),filtered=sorted.filter(e=>!q||[e.date,e.description,e.payer,e.currency,(e.splitWith||[]).join(',')].join(' ').toLowerCase().includes(q));$('recentList').innerHTML=sorted.slice(0,4).map(expenseCard).join('')||'<div class="empty">No expenses yet.</div>';$('expenseList').innerHTML=filtered.map(expenseCard).join('')||'<div class="empty">No matching expenses.</div>';const b=balances(),balHtml=Object.entries(b).sort((a,b)=>b[1]-a[1]).map(([p,a])=>`<div class="row"><strong>${esc(p)}</strong><span class="${a>=0?'positive':'negative'}">${a>=0?'+':''}${money(a)} ${esc(state.baseCurrency)}</span></div>`).join('');$('summaryList').innerHTML=balHtml||'<div class="empty">No data yet.</div>';$('dashboardBalances').innerHTML=balHtml||'<div class="empty">No balances yet.</div>';const st=settlements(b);$('settleList').innerHTML=st.map(s=>`<div class="settle"><div class="top"><div><b>${esc(s.from)} → ${esc(s.to)}</b><div class="meta">${esc(s.from)} should pay ${esc(s.to)}</div></div><div class="amount">${money(s.amount)} ${esc(state.baseCurrency)}</div></div></div>`).join('')||'<div class="empty">All settled.</div>'}document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));$(t.dataset.view).classList.add('active');t.classList.add('active')});$('search').oninput=render;$('closeEdit').onclick=()=>$('editWrap').classList.remove('show');$('addPerson').onclick=async()=>{const n=$('personInput').value.trim();if(!n)return;if(state.people.some(p=>p.toLowerCase()===n.toLowerCase()))return toast('Person exists');state.people.push(n);$('personInput').value='';await saveMeta();render()};$('saveTrip').onclick=async()=>{state.tripName=$('tripNameInput').value.trim()||'Trip Expense';state.baseCurrency=$('baseCurrency').value;state.defaultCurrency=$('defaultCurrency').value;state.fxRates[state.baseCurrency]=1;await saveMeta();render();toast('Saved')};$('shareBtn').onclick=$('copyLink').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);toast('Copied link')}catch{prompt('Copy link',location.href)}};$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({tripId,...state},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='trip-expense.json';a.click()};async function start(){render();try{status('Loading Firebase…');if(!window.firebaseConfig||!window.firebaseConfig.apiKey)throw Error('Missing firebase-config.js');firebase.initializeApp(window.firebaseConfig);db=firebase.firestore();status('Signing in…');await firebase.auth().signInAnonymously();status('Connected · shared editing on');tripRef=db.collection('trips').doc(tripId);tripRef.onSnapshot(async doc=>{try{if(!doc.exists){await tripRef.set({tripName:state.tripName,people:state.people,baseCurrency:state.baseCurrency,defaultCurrency:state.defaultCurrency,fxRates:state.fxRates,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return}const d=doc.data();state={...state,tripName:d.tripName||state.tripName,people:d.people||state.people,baseCurrency:d.baseCurrency||state.baseCurrency,defaultCurrency:d.defaultCurrency||state.defaultCurrency,fxRates:{...state.fxRates,...(d.fxRates||{})}};render()}catch(e){status('Trip load error: '+e.message)}});tripRef.collection('expenses').onSnapshot(snap=>{state.expenses=snap.docs.map(d=>({id:d.id,...d.data()}));render()},e=>status('Expenses error: '+e.message))}catch(e){status('Local fallback: '+e.message);const saved=localStorage.getItem('trip-'+tripId);if(saved){try{state=JSON.parse(saved)}catch{}}render()}}start();
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f5efe6" />
+  <title>Trip Expense Split</title>
+
+  <script>
+    window.onerror = (message, source, line) => {
+      const status = document.getElementById('status');
+      if (status) status.textContent = `JS error: ${message} (line ${line})`;
+    };
+  </script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <style>
+    :root {
+      /* Soft-paper palette inspired by the user's AnuPpuccin / Rose Pine preference. */
+      --paper: #f5efe6;
+      --paper-deep: #eee5da;
+      --card: #fffaf2;
+      --card-soft: #fbf5ec;
+      --ink: #493a33;
+      --ink-strong: #352923;
+      --muted: #83746b;
+      --line: #e5d8ca;
+      --line-strong: #d9c9ba;
+
+      --teal: #668f87;
+      --teal-deep: #4f766f;
+      --teal-soft: #dce8e3;
+      --rose: #bd888b;
+      --rose-soft: #f1dddc;
+      --peach: #d39a76;
+      --peach-soft: #f3dfcf;
+      --gold: #b99a66;
+      --gold-soft: #eee4ca;
+      --sage: #8b9b7d;
+      --sage-soft: #e3e9dc;
+
+      --danger: #a95f61;
+      --danger-soft: #f4dddd;
+      --success: #66866f;
+      --success-soft: #e0eadf;
+
+      --shadow: 0 10px 28px rgba(84, 62, 45, 0.08);
+      --shadow-soft: 0 5px 16px rgba(84, 62, 45, 0.06);
+      --radius: 20px;
+      --radius-sm: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--paper); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(211, 154, 118, 0.10), transparent 28rem),
+        radial-gradient(circle at 95% 16%, rgba(102, 143, 135, 0.10), transparent 26rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans TC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    button {
+      border: 0;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      min-height: 44px;
+      font-weight: 800;
+      cursor: pointer;
+      background: var(--teal);
+      color: #fffaf2;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+    button:active { transform: translateY(1px) scale(.99); }
+    button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    button:hover {
+      background: var(--teal-deep);
+      box-shadow: 0 6px 14px rgba(79, 118, 111, .16);
+    }
+
+    button.ghost {
+      background: var(--card);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    button.ghost:hover { background: var(--card-soft); }
+
+    button.secondary {
+      background: var(--peach-soft);
+      color: #704e3d;
+    }
+
+    button.secondary:hover { background: #edd2bd; }
+
+    button.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    button.small {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 13px 12px;
+      background: rgba(255, 250, 242, .92);
+      color: var(--ink-strong);
+      font-size: 16px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(102, 143, 135, .14);
+      background: var(--card);
+    }
+
+    textarea { min-height: 92px; resize: vertical; }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin: 9px 0 6px;
+      letter-spacing: .01em;
+    }
+
+    h1, h2, h3 { color: var(--ink-strong); }
+    h1 { font-size: 23px; margin: 3px 0 2px; letter-spacing: -.025em; }
+    h2 { font-size: 18px; margin: 0 0 11px; letter-spacing: -.015em; }
+    h3 { font-size: 15px; margin: 0; }
+
+    .hidden { display: none !important; }
+
+    .icon {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 auto;
+      display: inline-block;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .icon-lg { width: 25px; height: 25px; }
+    .icon-sm { width: 16px; height: 16px; }
+
+    .iconText {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .app {
+      max-width: 880px;
+      margin: auto;
+      padding: 14px 14px 96px;
+    }
+
+    .appHeader {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 7px 0 12px;
+      background: rgba(245, 239, 230, .90);
+      backdrop-filter: blur(16px);
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .headerLeft {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .headerCopy { min-width: 0; }
+    .headerCopy h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .roundButton {
+      width: 42px;
+      height: 42px;
+      min-height: 42px;
+      padding: 0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .status, .hint, .meta {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .card, .expense, .settle, .box {
+      background: rgba(255, 250, 242, .94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 15px;
+      margin: 12px 0;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .cardTitle {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 11px;
+    }
+
+    .sectionIcon {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+    }
+
+    .sectionIcon.rose { background: var(--rose-soft); color: #8d5f63; }
+    .sectionIcon.peach { background: var(--peach-soft); color: #8a634b; }
+    .sectionIcon.gold { background: var(--gold-soft); color: #806c47; }
+    .sectionIcon.sage { background: var(--sage-soft); color: #65715b; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+
+    .metric {
+      background: var(--card-soft);
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      padding: 12px;
+    }
+
+    .metric:nth-child(1) { background: linear-gradient(145deg, var(--peach-soft), #fbf0e6); }
+    .metric:nth-child(2) { background: linear-gradient(145deg, var(--teal-soft), #edf4f0); }
+    .metric:nth-child(3) { background: linear-gradient(145deg, var(--gold-soft), #f6f0df); }
+
+    .metric .label { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .metric .value { font-size: 20px; font-weight: 950; margin-top: 4px; color: var(--ink-strong); }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .tabs {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      background: rgba(255, 250, 242, .94);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+    }
+
+    .tab {
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      min-height: 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 2px;
+      border-radius: 15px;
+      box-shadow: none;
+    }
+
+    .tab:hover { background: var(--card-soft); box-shadow: none; }
+
+    .tab.active {
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 9px 11px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: none;
+    }
+
+    .chip:hover { background: var(--card-soft); box-shadow: none; }
+    .chip.active { background: var(--teal); color: white; border-color: var(--teal); }
+
+    .expense-main { display: flex; justify-content: space-between; gap: 12px; }
+    .title, .amount { font-weight: 950; color: var(--ink-strong); }
+    .amount { white-space: nowrap; }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding: 11px 0;
+    }
+
+    .row:last-child { border-bottom: 0; }
+    .positive { color: var(--success); font-weight: 950; }
+    .negative { color: var(--danger); font-weight: 950; }
+    .empty { text-align: center; color: var(--muted); padding: 24px 10px; }
+
+    .pill {
+      min-height: 36px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+      font-size: 12px;
+      padding: 8px 11px;
+    }
+
+    .pill:hover { background: #cfded8; box-shadow: none; }
+
+    .toast {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 88px;
+      z-index: 99;
+      display: none;
+      background: var(--ink-strong);
+      color: var(--card);
+      border-radius: 16px;
+      padding: 13px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show { display: block; }
+
+    .modalWrap {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: flex-end;
+      background: rgba(53, 41, 35, .35);
+      backdrop-filter: blur(3px);
+    }
+
+    .modalWrap.show { display: flex; }
+
+    .modal {
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 18px 14px calc(18px + env(safe-area-inset-bottom));
+      max-height: 90vh;
+      overflow: auto;
+      background: var(--card);
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -16px 50px rgba(53, 41, 35, .16);
+    }
+
+    /* Trip launcher */
+    .launcher {
+      max-width: 720px;
+      margin: auto;
+      padding: 24px 16px 48px;
+    }
+
+    .launcherHero {
+      padding: 24px 4px 16px;
+      text-align: center;
+    }
+
+    .launcherMark {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 23px;
+      background: linear-gradient(145deg, var(--teal-soft), var(--peach-soft));
+      color: var(--teal-deep);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .launcherHero h1 { font-size: 31px; margin-bottom: 6px; }
+    .launcherHero p { color: var(--muted); margin: 0 auto; max-width: 520px; line-height: 1.6; }
+
+    .launcherActions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .launcherPrimary {
+      min-height: 52px;
+      font-size: 15px;
+      background: var(--teal);
+    }
+
+    .launcherSecondary {
+      min-height: 52px;
+      font-size: 15px;
+      background: var(--peach-soft);
+      color: #704e3d;
+    }
+
+    .launcherSection {
+      margin-top: 24px;
+    }
+
+    .launcherSectionHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 3px 8px;
+    }
+
+    .launcherSectionHeader h2 { margin: 0; }
+
+    .tripList { display: grid; gap: 10px; }
+
+    .tripCard {
+      width: 100%;
+      min-height: 0;
+      padding: 15px;
+      text-align: left;
+      color: var(--ink);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      grid-template-columns: 46px 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tripCard:hover {
+      background: #fff8ef;
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow);
+    }
+
+    .tripCardIcon {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+    }
+
+    .tripCard:nth-child(4n + 2) .tripCardIcon { background: var(--peach-soft); color: #8a634b; }
+    .tripCard:nth-child(4n + 3) .tripCardIcon { background: var(--rose-soft); color: #8d5f63; }
+    .tripCard:nth-child(4n + 4) .tripCardIcon { background: var(--gold-soft); color: #806c47; }
+
+    .tripCardName {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--ink-strong);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tripCardMeta { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .tripArrow { color: var(--muted); display: flex; }
+
+    .launcherMessage {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(255, 250, 242, .6);
+    }
+
+    .inlineNote {
+      margin-top: 10px;
+      border-radius: 14px;
+      padding: 11px 12px;
+      background: var(--sage-soft);
+      color: #5d6755;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .modalActions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 14px; }
+
+    @media (max-width: 520px) {
+      .grid3 { grid-template-columns: 1fr 1fr; }
+      .grid3 .metric:last-child { grid-column: 1 / -1; }
+      .grid { grid-template-columns: 1fr; }
+      .launcherActions { grid-template-columns: 1fr; }
+      .expense-main { flex-direction: column; }
+      .expense-main > div:last-child { text-align: left !important; }
+      .tripCard { grid-template-columns: 42px 1fr auto; padding: 13px; }
+      .tripCardIcon { width: 42px; height: 42px; }
+    }
+
+    @media (min-width: 760px) {
+      .tabs {
+        max-width: 880px;
+        margin: auto;
+        border-left: 1px solid var(--line);
+        border-right: 1px solid var(--line);
+        border-radius: 22px 22px 0 0;
+      }
+
+      .modalWrap { align-items: center; }
+      .modal { border-radius: 24px; padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tricount-style launcher shown only when there is no ?trip=... in the URL. -->
+  <main id="launcherScreen" class="launcher hidden">
+    <section class="launcherHero">
+      <div class="launcherMark">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 21h4M12 17v4M6 17h12l-1.4-8.4A2 2 0 0 0 14.63 7H9.37A2 2 0 0 0 7.4 8.6L6 17Z"/>
+          <path d="M9 7V5a3 3 0 0 1 6 0v2"/>
+        </svg>
+      </div>
+      <h1>Trip Split</h1>
+      <p>Pick up where you left off, open a shared trip, or start a new one for your next adventure.</p>
+    </section>
+
+    <div class="launcherActions">
+      <button id="newTripLauncherBtn" class="launcherPrimary iconText">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Create new trip
+      </button>
+      <button id="openSharedTripBtn" class="launcherSecondary iconText">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg>
+        Open shared trip
+      </button>
+    </div>
+
+    <section class="launcherSection">
+      <div class="launcherSectionHeader">
+        <div class="cardTitle" style="margin:0">
+          <span class="sectionIcon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M5 7l1 13h12l1-13M9 11v5M15 11v5M8 7l1-3h6l1 3"/></svg>
+          </span>
+          <div>
+            <h2>Your trips</h2>
+            <div id="launcherStatus" class="status">Connecting…</div>
+          </div>
+        </div>
+      </div>
+      <div id="tripList" class="tripList">
+        <div class="launcherMessage">Loading your trips…</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Existing trip app. -->
+  <div id="tripApp" class="hidden">
+    <div class="app">
+      <header class="appHeader">
+        <div class="top">
+          <div class="headerLeft">
+            <button id="homeBtn" class="roundButton" title="My trips" aria-label="My trips">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div class="headerCopy">
+              <h1 id="tripTitle">Trip Expense</h1>
+              <div id="status" class="status">Starting…</div>
+            </div>
+          </div>
+          <button id="shareBtn" class="pill iconText">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.7 6.8-4.4M8.6 13.3l6.8 4.4"/></svg>
+            Share
+          </button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="view active">
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon peach">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h7V3H3v9Zm11 9h7V12h-7v9ZM3 21h7v-5H3v5Zm11-13h7V3h-7v5Z"/></svg>
+            </span>
+            <h2>Dashboard</h2>
+          </div>
+          <div class="grid3">
+            <div class="metric"><div class="label">Total spent</div><div id="metricTotal" class="value">0.00</div></div>
+            <div class="metric"><div class="label">Expenses</div><div id="metricCount" class="value">0</div></div>
+            <div class="metric"><div class="label">Base</div><div id="metricCurrency" class="value">HKD</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon rose">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+            <h2>Quick Add</h2>
+          </div>
+          <div id="quickDash"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon gold">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l3 3v17H6V2Z"/><path d="M14 2v4h4M9 10h6M9 14h6M9 18h4"/></svg>
+            </span>
+            <h2>Recent Expenses</h2>
+          </div>
+          <div id="recentList"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon sage">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <h2>Balances</h2>
+          </div>
+          <div id="dashboardBalances"></div>
+        </div>
+      </section>
+
+      <section id="expenses" class="view">
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon gold">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l3 3v17H6V2Z"/><path d="M14 2v4h4M9 10h6M9 14h6M9 18h4"/></svg>
+            </span>
+            <h2>Expenses</h2>
+          </div>
+          <input id="search" placeholder="Search expense / payer / currency" />
+          <div id="expenseList"></div>
+        </div>
+      </section>
+
+      <section id="settle" class="view">
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon rose">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 6h14M5 6l-3 6h6L5 6Zm14 0-3 6h6l-3-6ZM8 21h8"/></svg>
+            </span>
+            <h2>Settle Up</h2>
+          </div>
+          <div id="settleList"></div>
+        </div>
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon sage">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            </span>
+            <h2>Balances by Person</h2>
+          </div>
+          <div id="summaryList"></div>
+        </div>
+      </section>
+
+      <section id="quick" class="view">
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon peach">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+            <h2>Quick Add</h2>
+          </div>
+          <div id="quickPage"></div>
+        </div>
+      </section>
+
+      <section id="setup" class="view">
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5V8l8-5 8 5v11.5M8 21v-8h8v8"/></svg>
+            </span>
+            <h2>Trip</h2>
+          </div>
+          <label>Trip name</label>
+          <input id="tripNameInput" />
+          <div class="grid">
+            <div><label>Base currency</label><select id="baseCurrency"></select></div>
+            <div><label>Default expense currency</label><select id="defaultCurrency"></select></div>
+          </div>
+          <button id="saveTrip" class="iconText" style="width:100%;margin-top:10px">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+            Save Trip Settings
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon gold">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3 4 7l4 4M4 7h12a4 4 0 0 1 4 4v1M16 21l4-4-4-4M20 17H8a4 4 0 0 1-4-4v-1"/></svg>
+            </span>
+            <h2>FX Rates</h2>
+          </div>
+          <div id="fxInputs"></div>
+          <div class="hint">Rate means: 1 unit of that currency equals how many units of your base currency.</div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon sage">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>
+            </span>
+            <h2>People</h2>
+          </div>
+          <div class="grid"><input id="personInput" placeholder="Add person" /><button id="addPerson">Add</button></div>
+          <div id="peopleList" class="chips"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon rose">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+            </span>
+            <h2>Data</h2>
+          </div>
+          <div class="grid">
+            <button id="exportBtn" class="iconText">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+              Export JSON
+            </button>
+            <button id="copyLink" class="ghost iconText">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg>
+              Copy Link
+            </button>
+          </div>
+          <button id="backToTripsBtn" class="secondary iconText" style="width:100%;margin-top:10px">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            Back to My Trips
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <nav class="tabs" aria-label="Trip navigation">
+      <button class="tab active" data-view="dashboard">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h7V3H3v9Zm11 9h7V12h-7v9ZM3 21h7v-5H3v5Zm11-13h7V3h-7v5Z"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="tab" data-view="expenses">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l3 3v17H6V2Z"/><path d="M14 2v4h4M9 10h6M9 14h6M9 18h4"/></svg>
+        <span>Expenses</span>
+      </button>
+      <button class="tab" data-view="settle">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 6h14M5 6l-3 6h6L5 6Zm14 0-3 6h6l-3-6ZM8 21h8"/></svg>
+        <span>Settle</span>
+      </button>
+      <button class="tab" data-view="quick">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+        <span>Quick</span>
+      </button>
+      <button class="tab" data-view="setup">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1A1.7 1.7 0 0 0 8 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 3.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H1.8V9.6h.1A1.7 1.7 0 0 0 3.6 8a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8 3.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V1.8h4v.1A1.7 1.7 0 0 0 15 3.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4h-.1A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+        <span>Setup</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Edit expense modal. -->
+  <div id="editWrap" class="modalWrap">
+    <div class="modal">
+      <div class="top">
+        <div class="cardTitle" style="margin:0">
+          <span class="sectionIcon peach">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
+          </span>
+          <h2>Edit expense</h2>
+        </div>
+        <button id="closeEdit" class="small ghost">Close</button>
+      </div>
+      <div id="editForm"></div>
+    </div>
+  </div>
+
+  <!-- Create trip modal. -->
+  <div id="newTripWrap" class="modalWrap">
+    <div class="modal">
+      <div class="top">
+        <div class="cardTitle" style="margin:0">
+          <span class="sectionIcon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </span>
+          <h2>Create New Trip</h2>
+        </div>
+        <button id="closeNewTrip" class="small ghost">Close</button>
+      </div>
+
+      <label>Trip name</label>
+      <input id="newTripName" placeholder="e.g. New Zealand 2026" />
+
+      <div class="grid">
+        <div><label>Base currency</label><select id="newTripBase"></select></div>
+        <div><label>Default expense currency</label><select id="newTripDefault"></select></div>
+      </div>
+
+      <label>People</label>
+      <textarea id="newTripPeople" placeholder="One name per line, or separated by commas">Jessica</textarea>
+      <div class="hint">You can always add or remove people later in Setup.</div>
+
+      <div class="modalActions">
+        <button id="cancelNewTrip" class="ghost">Cancel</button>
+        <button id="createTripBtn" class="iconText">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Create Trip
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open shared trip modal. -->
+  <div id="openTripWrap" class="modalWrap">
+    <div class="modal">
+      <div class="top">
+        <div class="cardTitle" style="margin:0">
+          <span class="sectionIcon rose">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg>
+          </span>
+          <h2>Open Shared Trip</h2>
+        </div>
+        <button id="closeOpenTrip" class="small ghost">Close</button>
+      </div>
+      <label>Paste a trip link or trip ID</label>
+      <input id="sharedTripInput" placeholder="https://…?trip=… or trip ID" />
+      <div class="inlineNote">Opening a shared trip never creates a new database record. The trip must already exist.</div>
+      <button id="openTripConfirmBtn" class="iconText" style="width:100%;margin-top:12px">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        Open Trip
+      </button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const CURRENCIES = ['HKD','THB','USD','TWD','JPY','CNY','SGD','EUR','GBP','AUD','KRW','MYR','NZD','CAD','CHF'];
+
+    let tripId = new URLSearchParams(location.search).get('trip');
+    let tripRef = null;
+    let db = null;
+    let authReady = false;
+    let unsubscribeTrip = null;
+    let unsubscribeExpenses = null;
+    let unsubscribeTripList = null;
+
+    let state = {
+      tripName: 'Trip Expense',
+      people: ['Jess', 'Amy', 'Matt'],
+      baseCurrency: 'HKD',
+      defaultCurrency: 'THB',
+      fxRates: {
+        HKD: 1,
+        THB: .22,
+        USD: 7.8,
+        TWD: .24,
+        JPY: .052,
+        CNY: 1.08,
+        SGD: 5.8,
+        EUR: 8.5,
+        GBP: 9.9,
+        AUD: 5.1,
+        KRW: .0057,
+        MYR: 1.65,
+        NZD: 4.6,
+        CAD: 5.7,
+        CHF: 8.8
+      },
+      expenses: []
+    };
+
+    const $ = id => document.getElementById(id);
+
+    function uuid() {
+      return crypto.randomUUID ? crypto.randomUUID() : `id${Date.now()}${Math.random().toString(36).slice(2)}`;
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function expenseDate(expense) {
+      return expense.date || (expense.createdAt ? new Date(expense.createdAt).toISOString().slice(0, 10) : today());
+    }
+
+    function status(text) {
+      if ($('status')) $('status').textContent = text;
+    }
+
+    function launcherStatus(text) {
+      if ($('launcherStatus')) $('launcherStatus').textContent = text;
+    }
+
+    function toast(text) {
+      $('toast').textContent = text;
+      $('toast').classList.add('show');
+      setTimeout(() => $('toast').classList.remove('show'), 2400);
+    }
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    function money(number) {
+      return Number(number || 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function timestampMillis(value) {
+      if (!value) return 0;
+      if (typeof value.toMillis === 'function') return value.toMillis();
+      if (typeof value.seconds === 'number') return value.seconds * 1000;
+      if (typeof value === 'number') return value;
+      const parsed = new Date(value).getTime();
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function relativeDate(value) {
+      const ms = timestampMillis(value);
+      if (!ms) return 'No recent activity';
+      const diff = Date.now() - ms;
+      const minute = 60 * 1000;
+      const hour = 60 * minute;
+      const day = 24 * hour;
+      if (diff < minute) return 'Updated just now';
+      if (diff < hour) return `Updated ${Math.max(1, Math.floor(diff / minute))} min ago`;
+      if (diff < day) return `Updated ${Math.max(1, Math.floor(diff / hour))} hr ago`;
+      if (diff < 7 * day) return `Updated ${Math.max(1, Math.floor(diff / day))} day${Math.floor(diff / day) === 1 ? '' : 's'} ago`;
+      return `Updated ${new Date(ms).toLocaleDateString()}`;
+    }
+
+    function tripUrl(id) {
+      const url = new URL(location.href);
+      url.search = '';
+      url.searchParams.set('trip', id);
+      return url.toString();
+    }
+
+    function goHome() {
+      const url = new URL(location.href);
+      url.search = '';
+      location.href = url.toString();
+    }
+
+    function goToTrip(id) {
+      location.href = tripUrl(id);
+    }
+
+    function rate(currency) {
+      return currency === state.baseCurrency ? 1 : Number(state.fxRates[currency] || 1);
+    }
+
+    function baseAmt(expense) {
+      return Number(expense.baseAmount ?? (Number(expense.amount || 0) * Number(expense.fxRate || 1)));
+    }
+
+    function currencies() {
+      return [...new Set([state.baseCurrency, state.defaultCurrency, ...CURRENCIES])];
+    }
+
+    function fillSelect(id, value, list = currencies()) {
+      const select = $(id);
+      if (!select) return;
+      select.innerHTML = list.map(currency => `<option ${currency === value ? 'selected' : ''}>${esc(currency)}</option>`).join('');
+    }
+
+    function fillNewTripCurrencySelects() {
+      fillSelect('newTripBase', 'HKD', CURRENCIES);
+      fillSelect('newTripDefault', 'HKD', CURRENCIES);
+    }
+
+    async function initFirebase() {
+      if (authReady && db) return;
+      if (!window.firebaseConfig || !window.firebaseConfig.apiKey) {
+        throw new Error('Missing firebase-config.js');
+      }
+      if (!firebase.apps.length) firebase.initializeApp(window.firebaseConfig);
+      db = firebase.firestore();
+      await firebase.auth().signInAnonymously();
+      authReady = true;
+    }
+
+    function showLauncher() {
+      $('launcherScreen').classList.remove('hidden');
+      $('tripApp').classList.add('hidden');
+      fillNewTripCurrencySelects();
+    }
+
+    function showTripApp() {
+      $('launcherScreen').classList.add('hidden');
+      $('tripApp').classList.remove('hidden');
+    }
+
+    async function startLauncher() {
+      showLauncher();
+      launcherStatus('Connecting…');
+      try {
+        await initFirebase();
+        launcherStatus('Connected');
+
+        unsubscribeTripList = db.collection('trips').onSnapshot(snapshot => {
+          const trips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          trips.sort((a, b) => {
+            const bTime = timestampMillis(b.updatedAt || b.createdAt);
+            const aTime = timestampMillis(a.updatedAt || a.createdAt);
+            return bTime - aTime;
+          });
+          renderTripList(trips);
+          launcherStatus(`${trips.length} trip${trips.length === 1 ? '' : 's'} available`);
+        }, error => {
+          launcherStatus(`Could not load trips: ${error.message}`);
+          $('tripList').innerHTML = `<div class="launcherMessage">I couldn't load existing trips from Firebase.<br><span class="meta">${esc(error.message)}</span></div>`;
+        });
+      } catch (error) {
+        launcherStatus(`Connection error: ${error.message}`);
+        $('tripList').innerHTML = `<div class="launcherMessage">Firebase is not available.<br><span class="meta">${esc(error.message)}</span></div>`;
+      }
+    }
+
+    function renderTripList(trips) {
+      if (!trips.length) {
+        $('tripList').innerHTML = `
+          <div class="launcherMessage">
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <div style="margin-top:8px;font-weight:800;color:var(--ink)">No trips yet</div>
+            <div class="meta" style="margin-top:4px">Create your first trip to get started.</div>
+          </div>`;
+        return;
+      }
+
+      $('tripList').innerHTML = trips.map(trip => {
+        const people = Array.isArray(trip.people) ? trip.people.length : 0;
+        const base = trip.baseCurrency || '—';
+        const updated = relativeDate(trip.updatedAt || trip.createdAt);
+        return `
+          <button class="tripCard" data-trip-id="${esc(trip.id)}">
+            <span class="tripCardIcon">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 21h4M12 17v4M6 17h12l-1.4-8.4A2 2 0 0 0 14.63 7H9.37A2 2 0 0 0 7.4 8.6L6 17Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+            </span>
+            <span style="min-width:0">
+              <span class="tripCardName">${esc(trip.tripName || 'Untitled trip')}</span>
+              <span class="tripCardMeta">${people} ${people === 1 ? 'person' : 'people'} · ${esc(base)} · ${esc(updated)}</span>
+            </span>
+            <span class="tripArrow">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </span>
+          </button>`;
+      }).join('');
+
+      [...$('tripList').querySelectorAll('[data-trip-id]')].forEach(button => {
+        button.onclick = () => goToTrip(button.dataset.tripId);
+      });
+    }
+
+    function openNewTripModal() {
+      $('newTripName').value = '';
+      $('newTripPeople').value = 'Jessica';
+      fillNewTripCurrencySelects();
+      $('newTripWrap').classList.add('show');
+      setTimeout(() => $('newTripName').focus(), 50);
+    }
+
+    function closeNewTripModal() {
+      $('newTripWrap').classList.remove('show');
+    }
+
+    function parsePeople(value) {
+      const people = String(value || '')
+        .split(/[\n,]+/)
+        .map(name => name.trim())
+        .filter(Boolean);
+      return [...new Map(people.map(name => [name.toLowerCase(), name])).values()];
+    }
+
+    async function createNewTrip() {
+      const button = $('createTripBtn');
+      const name = $('newTripName').value.trim();
+      const people = parsePeople($('newTripPeople').value);
+      const baseCurrency = $('newTripBase').value;
+      const defaultCurrency = $('newTripDefault').value;
+
+      if (!name) return toast('Enter a trip name');
+      if (!people.length) return toast('Add at least one person');
+
+      button.disabled = true;
+      button.textContent = 'Creating…';
+
+      try {
+        await initFirebase();
+        const id = uuid();
+        const fxRates = { ...state.fxRates, [baseCurrency]: 1 };
+        await db.collection('trips').doc(id).set({
+          tripName: name,
+          people,
+          baseCurrency,
+          defaultCurrency,
+          fxRates,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        goToTrip(id);
+      } catch (error) {
+        toast(`Could not create trip: ${error.message}`);
+        button.disabled = false;
+        button.innerHTML = '<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Create Trip';
+      }
+    }
+
+    function extractTripId(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      try {
+        const url = new URL(raw);
+        return url.searchParams.get('trip') || '';
+      } catch {
+        return raw;
+      }
+    }
+
+    async function openSharedTrip() {
+      const id = extractTripId($('sharedTripInput').value);
+      if (!id) return toast('Paste a trip link or trip ID');
+      try {
+        await initFirebase();
+        const snapshot = await db.collection('trips').doc(id).get();
+        if (!snapshot.exists) return toast('That trip does not exist');
+        goToTrip(id);
+      } catch (error) {
+        toast(`Could not open trip: ${error.message}`);
+      }
+    }
+
+    function peopleChips(mode, expense = {}) {
+      return state.people.map(person => {
+        const active = mode === 'payer'
+          ? person === (expense.payer || state.people[0])
+          : (expense.splitWith || state.people).includes(person);
+        return `<button type="button" class="chip ${active ? 'active' : ''}" data-person="${esc(person)}">${esc(person)}</button>`;
+      }).join('');
+    }
+
+    function formHtml(prefix, expense = {}) {
+      return `
+        <label>Date</label>
+        <input id="${prefix}Date" type="date" value="${esc(expenseDate(expense))}">
+
+        <label>Description</label>
+        <input id="${prefix}Desc" placeholder="Dinner / taxi / hotel" value="${esc(expense.description || '')}">
+
+        <div class="grid">
+          <div>
+            <label>Currency</label>
+            <select id="${prefix}Currency"></select>
+          </div>
+          <div>
+            <label>Amount</label>
+            <input id="${prefix}Amount" type="number" inputmode="decimal" placeholder="120" value="${esc(expense.amount || '')}">
+          </div>
+        </div>
+
+        <label>FX to base</label>
+        <input id="${prefix}Fx" type="number" inputmode="decimal" step="0.000001" value="${esc(expense.fxRate || '')}">
+        <div id="${prefix}Converted" class="hint">Converted amount: 0.00 ${esc(state.baseCurrency)}</div>
+
+        <div class="box">
+          <div class="hint"><b>Paid by — choose one</b></div>
+          <div id="${prefix}Payer" class="chips">${peopleChips('payer', expense)}</div>
+        </div>
+
+        <div class="box">
+          <div class="top">
+            <div class="hint"><b>Split with — choose one or more</b></div>
+            <button type="button" class="small ghost" id="${prefix}All">All</button>
+          </div>
+          <div id="${prefix}Split" class="chips">${peopleChips('split', expense)}</div>
+        </div>
+
+        <button id="${prefix}Save" class="iconText" style="width:100%;margin-top:10px">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="${expense.id ? 'M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z M17 21v-8H7v8M7 3v5h8' : 'M12 5v14M5 12h14'}"/></svg>
+          ${expense.id ? 'Save Changes' : 'Add Expense'}
+        </button>`;
+    }
+
+    function setupForm(prefix, containerId, expense = {}) {
+      const box = $(containerId);
+      if (!box) return;
+      box.innerHTML = formHtml(prefix, expense);
+      fillSelect(prefix + 'Currency', expense.currency || state.defaultCurrency);
+
+      if (!$(prefix + 'Fx').value) $(prefix + 'Fx').value = rate($(prefix + 'Currency').value);
+
+      const updateConverted = () => {
+        const amount = Number($(prefix + 'Amount').value) || 0;
+        const fx = Number($(prefix + 'Fx').value) || rate($(prefix + 'Currency').value);
+        $(prefix + 'Converted').textContent = `Converted amount: ${money(amount * fx)} ${state.baseCurrency}`;
+      };
+
+      $(prefix + 'Currency').onchange = () => {
+        $(prefix + 'Fx').value = rate($(prefix + 'Currency').value);
+        updateConverted();
+      };
+      $(prefix + 'Amount').oninput = updateConverted;
+      $(prefix + 'Fx').oninput = updateConverted;
+
+      [...$(prefix + 'Payer').querySelectorAll('.chip')].forEach(chip => {
+        chip.onclick = () => {
+          [...$(prefix + 'Payer').querySelectorAll('.chip')].forEach(item => item.classList.remove('active'));
+          chip.classList.add('active');
+        };
+      });
+
+      [...$(prefix + 'Split').querySelectorAll('.chip')].forEach(chip => {
+        chip.onclick = () => chip.classList.toggle('active');
+      });
+
+      $(prefix + 'All').onclick = () => {
+        [...$(prefix + 'Split').querySelectorAll('.chip')].forEach(item => item.classList.add('active'));
+      };
+
+      $(prefix + 'Save').onclick = () => saveExpense(prefix, expense.id);
+      updateConverted();
+    }
+
+    function collect(prefix, id) {
+      const description = $(prefix + 'Desc').value.trim();
+      const amount = Number($(prefix + 'Amount').value);
+      const currency = $(prefix + 'Currency').value;
+      const fxRate = Number($(prefix + 'Fx').value) || 1;
+      const date = $(prefix + 'Date').value || today();
+      const payer = $(prefix + 'Payer').querySelector('.chip.active')?.dataset.person;
+      const splitWith = [...$(prefix + 'Split').querySelectorAll('.chip.active')].map(chip => chip.dataset.person);
+
+      if (!description) throw new Error('Enter a description');
+      if (!amount || amount <= 0) throw new Error('Enter amount');
+      if (!payer) throw new Error('Choose who paid');
+      if (!splitWith.length) throw new Error('Choose split people');
+
+      return {
+        id: id || uuid(),
+        date,
+        description,
+        amount,
+        currency,
+        fxRate,
+        baseAmount: amount * fxRate,
+        payer,
+        splitWith,
+        updatedAt: Date.now()
+      };
+    }
+
+    async function saveExpense(prefix, id) {
+      try {
+        const expense = collect(prefix, id);
+        state.fxRates[expense.currency] = expense.fxRate;
+        await saveMeta();
+
+        if (id) {
+          if (tripRef) {
+            await tripRef.collection('expenses').doc(id).set(expense, { merge: true });
+          } else {
+            state.expenses = state.expenses.map(item => item.id === id ? { ...item, ...expense } : item);
+          }
+          $('editWrap').classList.remove('show');
+          toast('Expense updated');
+        } else {
+          expense.createdAt = Date.now();
+          if (tripRef) {
+            await tripRef.collection('expenses').doc(expense.id).set(expense);
+          } else {
+            state.expenses.unshift(expense);
+          }
+          $(prefix + 'Desc').value = '';
+          $(prefix + 'Amount').value = '';
+          $(prefix + 'Date').value = today();
+          toast('Expense added');
+        }
+
+        if (!tripRef) {
+          localStorage.setItem('trip-' + tripId, JSON.stringify(state));
+          render();
+        }
+      } catch (error) {
+        toast(error.message);
+      }
+    }
+
+    async function saveMeta() {
+      const data = {
+        tripName: state.tripName,
+        people: state.people,
+        baseCurrency: state.baseCurrency,
+        defaultCurrency: state.defaultCurrency,
+        fxRates: state.fxRates
+      };
+
+      if (tripRef) {
+        data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+        await tripRef.set(data, { merge: true });
+      } else {
+        localStorage.setItem('trip-' + tripId, JSON.stringify(state));
+      }
+    }
+
+    window.deleteExpense = async id => {
+      if (!confirm('Delete this expense?')) return;
+      if (tripRef) {
+        await tripRef.collection('expenses').doc(id).delete();
+        await saveMeta();
+      } else {
+        state.expenses = state.expenses.filter(expense => expense.id !== id);
+        localStorage.setItem('trip-' + tripId, JSON.stringify(state));
+        render();
+      }
+    };
+
+    window.editExpense = id => {
+      const expense = state.expenses.find(item => item.id === id);
+      if (!expense) return;
+      setupForm('edit', 'editForm', expense);
+      $('editWrap').classList.add('show');
+    };
+
+    function balances() {
+      const result = {};
+      state.people.forEach(person => result[person] = 0);
+
+      state.expenses.forEach(expense => {
+        const amount = baseAmt(expense);
+        const split = expense.splitWith?.length ? expense.splitWith : state.people;
+        const share = amount / split.length;
+        result[expense.payer] = (result[expense.payer] || 0) + amount;
+        split.forEach(person => result[person] = (result[person] || 0) - share);
+      });
+
+      return result;
+    }
+
+    function settlements(balanceMap) {
+      const debtors = [];
+      const creditors = [];
+
+      Object.entries(balanceMap).forEach(([person, amount]) => {
+        amount = Math.round(amount * 100) / 100;
+        if (amount < -.01) debtors.push({ person, amount: -amount });
+        if (amount > .01) creditors.push({ person, amount });
+      });
+
+      debtors.sort((a, b) => b.amount - a.amount);
+      creditors.sort((a, b) => b.amount - a.amount);
+
+      const result = [];
+      let i = 0;
+      let j = 0;
+
+      while (i < debtors.length && j < creditors.length) {
+        const payment = Math.min(debtors[i].amount, creditors[j].amount);
+        result.push({
+          from: debtors[i].person,
+          to: creditors[j].person,
+          amount: Math.round(payment * 100) / 100
+        });
+        debtors[i].amount -= payment;
+        creditors[j].amount -= payment;
+        if (debtors[i].amount < .01) i++;
+        if (creditors[j].amount < .01) j++;
+      }
+
+      return result;
+    }
+
+    function expenseCard(expense) {
+      const base = baseAmt(expense);
+      return `
+        <div class="expense">
+          <div class="expense-main">
+            <div>
+              <div class="title">${esc(expense.description)}</div>
+              <div class="meta">
+                ${esc(expenseDate(expense))} · Paid by <b>${esc(expense.payer)}</b><br>
+                ${esc(expense.currency)} ${money(expense.amount)} × FX ${money(expense.fxRate)} = <b>${money(base)} ${esc(state.baseCurrency)}</b><br>
+                Split: ${esc((expense.splitWith || []).join(', '))}
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div class="amount">${money(base)} ${esc(state.baseCurrency)}</div>
+              <button class="small ghost iconText" onclick="editExpense('${expense.id}')">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
+                Edit
+              </button>
+              <button class="small danger iconText" onclick="deleteExpense('${expense.id}')">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function render() {
+      $('tripTitle').textContent = state.tripName;
+      $('tripNameInput').value = state.tripName;
+      $('metricCurrency').textContent = state.baseCurrency;
+
+      fillSelect('baseCurrency', state.baseCurrency);
+      fillSelect('defaultCurrency', state.defaultCurrency);
+
+      $('metricTotal').textContent = money(state.expenses.reduce((sum, expense) => sum + baseAmt(expense), 0));
+      $('metricCount').textContent = state.expenses.length;
+
+      setupForm('dash', 'quickDash');
+      setupForm('quick', 'quickPage');
+
+      $('peopleList').innerHTML = state.people.map(person => `<button class="chip" data-remove="${esc(person)}">${esc(person)} ×</button>`).join('');
+      [...$('peopleList').querySelectorAll('[data-remove]')].forEach(button => {
+        button.onclick = async () => {
+          if (state.people.length <= 1) return toast('Keep at least one person');
+          state.people = state.people.filter(person => person !== button.dataset.remove);
+          await saveMeta();
+          render();
+        };
+      });
+
+      $('fxInputs').innerHTML = currencies().map(currency => `
+        <div class="grid">
+          <div>
+            <label>${esc(currency)} to ${esc(state.baseCurrency)}</label>
+            <input data-fx="${esc(currency)}" type="number" step="0.000001" value="${currency === state.baseCurrency ? 1 : rate(currency)}" ${currency === state.baseCurrency ? 'disabled' : ''}>
+          </div>
+          <div style="display:flex;align-items:end">
+            <button class="small ghost" data-base="${esc(currency)}" style="width:100%">Set as base</button>
+          </div>
+        </div>`).join('');
+
+      [...$('fxInputs').querySelectorAll('[data-fx]')].forEach(input => {
+        input.onchange = async () => {
+          state.fxRates[input.dataset.fx] = Number(input.value) || 1;
+          await saveMeta();
+          render();
+        };
+      });
+
+      [...$('fxInputs').querySelectorAll('[data-base]')].forEach(button => {
+        button.onclick = async () => {
+          state.baseCurrency = button.dataset.base;
+          state.fxRates[state.baseCurrency] = 1;
+          await saveMeta();
+          render();
+        };
+      });
+
+      const sorted = [...state.expenses].sort((a, b) =>
+        expenseDate(b).localeCompare(expenseDate(a)) || (b.createdAt || 0) - (a.createdAt || 0)
+      );
+      const query = ($('search').value || '').toLowerCase();
+      const filtered = sorted.filter(expense => !query || [
+        expense.date,
+        expense.description,
+        expense.payer,
+        expense.currency,
+        (expense.splitWith || []).join(',')
+      ].join(' ').toLowerCase().includes(query));
+
+      $('recentList').innerHTML = sorted.slice(0, 4).map(expenseCard).join('') || '<div class="empty">No expenses yet.</div>';
+      $('expenseList').innerHTML = filtered.map(expenseCard).join('') || '<div class="empty">No matching expenses.</div>';
+
+      const balanceMap = balances();
+      const balanceHtml = Object.entries(balanceMap)
+        .sort((a, b) => b[1] - a[1])
+        .map(([person, amount]) => `
+          <div class="row">
+            <strong>${esc(person)}</strong>
+            <span class="${amount >= 0 ? 'positive' : 'negative'}">${amount >= 0 ? '+' : ''}${money(amount)} ${esc(state.baseCurrency)}</span>
+          </div>`).join('');
+
+      $('summaryList').innerHTML = balanceHtml || '<div class="empty">No data yet.</div>';
+      $('dashboardBalances').innerHTML = balanceHtml || '<div class="empty">No balances yet.</div>';
+
+      const settleData = settlements(balanceMap);
+      $('settleList').innerHTML = settleData.map(item => `
+        <div class="settle">
+          <div class="top">
+            <div>
+              <b>${esc(item.from)} → ${esc(item.to)}</b>
+              <div class="meta">${esc(item.from)} should pay ${esc(item.to)}</div>
+            </div>
+            <div class="amount">${money(item.amount)} ${esc(state.baseCurrency)}</div>
+          </div>
+        </div>`).join('') || '<div class="empty">All settled.</div>';
+    }
+
+    function bindUi() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.onclick = () => {
+          document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+          document.querySelectorAll('.tab').forEach(item => item.classList.remove('active'));
+          $(tab.dataset.view).classList.add('active');
+          tab.classList.add('active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+      });
+
+      $('search').oninput = render;
+      $('closeEdit').onclick = () => $('editWrap').classList.remove('show');
+
+      $('addPerson').onclick = async () => {
+        const name = $('personInput').value.trim();
+        if (!name) return;
+        if (state.people.some(person => person.toLowerCase() === name.toLowerCase())) return toast('Person exists');
+        state.people.push(name);
+        $('personInput').value = '';
+        await saveMeta();
+        render();
+      };
+
+      $('saveTrip').onclick = async () => {
+        state.tripName = $('tripNameInput').value.trim() || 'Trip Expense';
+        state.baseCurrency = $('baseCurrency').value;
+        state.defaultCurrency = $('defaultCurrency').value;
+        state.fxRates[state.baseCurrency] = 1;
+        await saveMeta();
+        render();
+        toast('Saved');
+      };
+
+      const copyCurrentTripLink = async () => {
+        try {
+          await navigator.clipboard.writeText(location.href);
+          toast('Copied link');
+        } catch {
+          prompt('Copy link', location.href);
+        }
+      };
+
+      $('shareBtn').onclick = copyCurrentTripLink;
+      $('copyLink').onclick = copyCurrentTripLink;
+
+      $('exportBtn').onclick = () => {
+        const blob = new Blob([JSON.stringify({ tripId, ...state }, null, 2)], { type: 'application/json' });
+        const anchor = document.createElement('a');
+        anchor.href = URL.createObjectURL(blob);
+        anchor.download = 'trip-expense.json';
+        anchor.click();
+        URL.revokeObjectURL(anchor.href);
+      };
+
+      $('homeBtn').onclick = goHome;
+      $('backToTripsBtn').onclick = goHome;
+
+      $('newTripLauncherBtn').onclick = openNewTripModal;
+      $('closeNewTrip').onclick = closeNewTripModal;
+      $('cancelNewTrip').onclick = closeNewTripModal;
+      $('createTripBtn').onclick = createNewTrip;
+
+      $('openSharedTripBtn').onclick = () => {
+        $('sharedTripInput').value = '';
+        $('openTripWrap').classList.add('show');
+        setTimeout(() => $('sharedTripInput').focus(), 50);
+      };
+      $('closeOpenTrip').onclick = () => $('openTripWrap').classList.remove('show');
+      $('openTripConfirmBtn').onclick = openSharedTrip;
+
+      $('newTripWrap').addEventListener('click', event => {
+        if (event.target === $('newTripWrap')) closeNewTripModal();
+      });
+      $('openTripWrap').addEventListener('click', event => {
+        if (event.target === $('openTripWrap')) $('openTripWrap').classList.remove('show');
+      });
+      $('editWrap').addEventListener('click', event => {
+        if (event.target === $('editWrap')) $('editWrap').classList.remove('show');
+      });
+    }
+
+    async function startTrip() {
+      showTripApp();
+      render();
+
+      try {
+        status('Loading Firebase…');
+        await initFirebase();
+        status('Checking trip…');
+
+        tripRef = db.collection('trips').doc(tripId);
+        const initialSnapshot = await tripRef.get();
+
+        // Important: a random or invalid ?trip= URL does NOT create a new document.
+        if (!initialSnapshot.exists) {
+          status('Trip not found');
+          toast('This trip does not exist');
+          setTimeout(goHome, 900);
+          return;
+        }
+
+        status('Connected · shared editing on');
+
+        unsubscribeTrip = tripRef.onSnapshot(doc => {
+          try {
+            if (!doc.exists) {
+              status('Trip no longer exists');
+              return;
+            }
+            const data = doc.data();
+            state = {
+              ...state,
+              tripName: data.tripName || state.tripName,
+              people: data.people || state.people,
+              baseCurrency: data.baseCurrency || state.baseCurrency,
+              defaultCurrency: data.defaultCurrency || state.defaultCurrency,
+              fxRates: { ...state.fxRates, ...(data.fxRates || {}) }
+            };
+            render();
+          } catch (error) {
+            status('Trip load error: ' + error.message);
+          }
+        });
+
+        unsubscribeExpenses = tripRef.collection('expenses').onSnapshot(snapshot => {
+          state.expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          render();
+        }, error => status('Expenses error: ' + error.message));
+      } catch (error) {
+        status('Local fallback: ' + error.message);
+        const saved = localStorage.getItem('trip-' + tripId);
+        if (saved) {
+          try { state = JSON.parse(saved); } catch { /* ignore broken local cache */ }
+        }
+        render();
+      }
+    }
+
+    async function start() {
+      bindUi();
+      if (tripId) {
+        await startTrip();
+      } else {
+        await startLauncher();
+      }
+    }
+
+    start();
+  </script>
+</body>
+</html>
