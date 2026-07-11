@@ -475,23 +475,41 @@
     .tripCard {
       width: 100%;
       min-height: 0;
-      padding: 15px;
-      text-align: left;
       color: var(--ink);
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+    }
+
+    .tripCard:hover {
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+
+    .tripCardOpen {
+      width: 100%;
+      min-height: 0;
+      padding: 15px;
+      text-align: left;
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
       display: grid;
-      grid-template-columns: 46px 1fr auto;
+      grid-template-columns: 46px minmax(0, 1fr) auto;
       align-items: center;
       gap: 12px;
     }
 
-    .tripCard:hover {
+    .tripCardOpen:hover {
       background: #fff8ef;
-      border-color: var(--line-strong);
-      box-shadow: var(--shadow);
+      transform: none;
+      box-shadow: none;
     }
 
     .tripCardIcon {
@@ -521,6 +539,84 @@
     .tripCardMeta { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.45; }
     .tripArrow { color: var(--muted); display: flex; }
 
+    .tripStatusRow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 7px;
+      flex-wrap: wrap;
+    }
+
+    .tripStatusBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      width: fit-content;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1;
+      border: 1px solid transparent;
+    }
+
+    .tripStatusBadge.settled {
+      background: var(--sage-soft);
+      color: #55634c;
+      border-color: #d6dfcf;
+    }
+
+    .tripStatusBadge.active {
+      background: var(--peach-soft);
+      color: #7b5b49;
+      border-color: #ead8c7;
+    }
+
+    .tripCardActions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid var(--line);
+      background: rgba(250, 244, 235, .62);
+    }
+
+    .tripActionBtn {
+      min-height: 38px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      justify-content: center;
+      box-shadow: none;
+    }
+
+    .tripActionBtn.rename {
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+    }
+
+    .tripActionBtn.settle {
+      background: var(--sage-soft);
+      color: #55634c;
+    }
+
+    .tripActionBtn.reopen {
+      background: var(--peach-soft);
+      color: #7b5b49;
+    }
+
+    .tripActionBtn.delete {
+      background: var(--rose-soft);
+      color: #8d5f63;
+    }
+
+    .tripActionBtn:hover {
+      transform: none;
+      box-shadow: none;
+      filter: brightness(.985);
+    }
+
     .launcherMessage {
       padding: 24px 16px;
       text-align: center;
@@ -549,8 +645,10 @@
       .launcherActions { grid-template-columns: 1fr; }
       .expense-main { flex-direction: column; }
       .expense-main > div:last-child { text-align: left !important; }
-      .tripCard { grid-template-columns: 42px 1fr auto; padding: 13px; }
+      .tripCardOpen { grid-template-columns: 42px minmax(0, 1fr) auto; padding: 13px; }
       .tripCardIcon { width: 42px; height: 42px; }
+      .tripCardActions { gap: 6px; padding: 8px; }
+      .tripActionBtn { padding: 8px 6px; font-size: 11px; }
     }
 
     @media (min-width: 760px) {
@@ -900,6 +998,7 @@
     let unsubscribeTrip = null;
     let unsubscribeExpenses = null;
     let unsubscribeTripList = null;
+    let launcherTrips = [];
 
     let state = {
       tripName: 'Trip Expense',
@@ -1070,6 +1169,7 @@
             const aTime = timestampMillis(a.updatedAt || a.createdAt);
             return bTime - aTime;
           });
+          launcherTrips = trips;
           renderTripList(trips);
           launcherStatus(`${trips.length} trip${trips.length === 1 ? '' : 's'} available`);
         }, error => {
@@ -1097,24 +1197,146 @@
         const people = Array.isArray(trip.people) ? trip.people.length : 0;
         const base = trip.baseCurrency || '—';
         const updated = relativeDate(trip.updatedAt || trip.createdAt);
+        const isSettled = trip.settled === true;
+        const statusBadge = isSettled
+          ? `<span class="tripStatusBadge settled">
+               <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.7 2.7L16.5 9"/></svg>
+               Settled
+             </span>`
+          : `<span class="tripStatusBadge active">
+               <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+               Active trip
+             </span>`;
+
         return `
-          <button class="tripCard" data-trip-id="${esc(trip.id)}">
-            <span class="tripCardIcon">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 21h4M12 17v4M6 17h12l-1.4-8.4A2 2 0 0 0 14.63 7H9.37A2 2 0 0 0 7.4 8.6L6 17Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
-            </span>
-            <span style="min-width:0">
-              <span class="tripCardName">${esc(trip.tripName || 'Untitled trip')}</span>
-              <span class="tripCardMeta">${people} ${people === 1 ? 'person' : 'people'} · ${esc(base)} · ${esc(updated)}</span>
-            </span>
-            <span class="tripArrow">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-            </span>
-          </button>`;
+          <article class="tripCard" data-card-trip-id="${esc(trip.id)}">
+            <button class="tripCardOpen" data-open-trip-id="${esc(trip.id)}" aria-label="Open ${esc(trip.tripName || 'Untitled trip')}">
+              <span class="tripCardIcon">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 21h4M12 17v4M6 17h12l-1.4-8.4A2 2 0 0 0 14.63 7H9.37A2 2 0 0 0 7.4 8.6L6 17Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+              </span>
+              <span style="min-width:0">
+                <span class="tripCardName">${esc(trip.tripName || 'Untitled trip')}</span>
+                <span class="tripCardMeta">${people} ${people === 1 ? 'person' : 'people'} · ${esc(base)} · ${esc(updated)}</span>
+                <span class="tripStatusRow">${statusBadge}</span>
+              </span>
+              <span class="tripArrow">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+              </span>
+            </button>
+
+            <div class="tripCardActions">
+              <button class="tripActionBtn rename iconText" data-rename-trip-id="${esc(trip.id)}">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
+                Rename
+              </button>
+              <button class="tripActionBtn ${isSettled ? 'reopen' : 'settle'} iconText" data-toggle-settled-trip-id="${esc(trip.id)}">
+                ${isSettled
+                  ? `<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg> Reopen`
+                  : `<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.7 2.7L16.5 9"/></svg> Mark settled`}
+              </button>
+              <button class="tripActionBtn delete iconText" data-delete-trip-id="${esc(trip.id)}">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>
+                Delete
+              </button>
+            </div>
+          </article>`;
       }).join('');
 
-      [...$('tripList').querySelectorAll('[data-trip-id]')].forEach(button => {
-        button.onclick = () => goToTrip(button.dataset.tripId);
+      [...$('tripList').querySelectorAll('[data-open-trip-id]')].forEach(button => {
+        button.onclick = () => goToTrip(button.dataset.openTripId);
       });
+
+      [...$('tripList').querySelectorAll('[data-rename-trip-id]')].forEach(button => {
+        button.onclick = () => renameTrip(button.dataset.renameTripId);
+      });
+
+      [...$('tripList').querySelectorAll('[data-toggle-settled-trip-id]')].forEach(button => {
+        button.onclick = () => toggleTripSettled(button.dataset.toggleSettledTripId);
+      });
+
+      [...$('tripList').querySelectorAll('[data-delete-trip-id]')].forEach(button => {
+        button.onclick = () => deleteTrip(button.dataset.deleteTripId);
+      });
+    }
+
+
+    async function renameTrip(id) {
+      const trip = launcherTrips.find(item => item.id === id);
+      if (!trip) return toast('Trip not found');
+
+      const currentName = trip.tripName || 'Untitled trip';
+      const nextName = prompt('Rename trip', currentName);
+      if (nextName === null) return;
+
+      const name = nextName.trim();
+      if (!name) return toast('Trip name cannot be empty');
+      if (name === currentName) return;
+
+      try {
+        await initFirebase();
+        await db.collection('trips').doc(id).set({
+          tripName: name,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        toast('Trip renamed');
+      } catch (error) {
+        toast(`Could not rename trip: ${error.message}`);
+      }
+    }
+
+    async function toggleTripSettled(id) {
+      const trip = launcherTrips.find(item => item.id === id);
+      if (!trip) return toast('Trip not found');
+
+      const nextSettled = trip.settled !== true;
+      try {
+        await initFirebase();
+        await db.collection('trips').doc(id).set({
+          settled: nextSettled,
+          settledAt: nextSettled ? firebase.firestore.FieldValue.serverTimestamp() : null,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        toast(nextSettled ? 'Trip marked as settled' : 'Trip reopened');
+      } catch (error) {
+        toast(`Could not update trip status: ${error.message}`);
+      }
+    }
+
+    async function deleteTrip(id) {
+      const trip = launcherTrips.find(item => item.id === id);
+      if (!trip) return toast('Trip not found');
+
+      const name = trip.tripName || 'Untitled trip';
+      const confirmed = confirm(
+        `Delete "${name}"?\n\nThis permanently deletes the trip and all of its expenses. This cannot be undone.`
+      );
+      if (!confirmed) return;
+
+      try {
+        await initFirebase();
+        launcherStatus(`Deleting ${name}…`);
+
+        const ref = db.collection('trips').doc(id);
+        const expensesSnapshot = await ref.collection('expenses').get();
+
+        // Firestore does not automatically delete subcollections when a parent document is deleted.
+        // Delete expenses in safe batches first, then delete the trip document itself.
+        const docs = expensesSnapshot.docs;
+        const batchSize = 400;
+
+        for (let i = 0; i < docs.length; i += batchSize) {
+          const batch = db.batch();
+          docs.slice(i, i + batchSize).forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+        }
+
+        await ref.delete();
+        toast(`Deleted ${name}`);
+      } catch (error) {
+        launcherStatus('Delete failed');
+        toast(`Could not delete trip: ${error.message}`);
+      }
     }
 
     function openNewTripModal() {
@@ -1160,6 +1382,7 @@
           baseCurrency,
           defaultCurrency,
           fxRates,
+          settled: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
