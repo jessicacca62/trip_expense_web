@@ -1025,6 +1025,33 @@
       white-space: nowrap;
     }
 
+    .memberRemoveBtn {
+      flex: 0 0 auto;
+      min-width: 70px;
+    }
+
+    .memberRemovalHint {
+      margin-top: 8px;
+      padding: 9px 10px;
+      border-radius: 13px;
+      border: 1px solid var(--line);
+      background: rgba(243, 223, 207, .42);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .calendarTravelDatesNote {
+      margin-bottom: 10px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(220, 232, 227, .46);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
     .roleBadge {
       display: inline-flex;
       align-items: center;
@@ -2292,6 +2319,9 @@
           <h3 style="margin:0">Trip members</h3>
           <div class="hint">Google accounts that have joined this trip.</div>
         </div>
+      </div>
+      <div id="memberRemovalHint" class="memberRemovalHint hidden">
+        As trip owner, you can remove members below. Their current access is revoked immediately. If they still have an active reusable invitation link, they can rejoin until that link is revoked.
       </div>
       <div id="memberList" class="memberList">
         <div class="launcherMessage">Loading members…</div>
@@ -3610,6 +3640,62 @@
       }
     }
 
+    async function removeTripMember(memberUid, memberName, memberEmail) {
+      if (!tripRef || !tripId) return;
+      if (!isTripOwner()) return toast('Only the trip owner can remove members');
+      if (!memberUid) return toast('This member has no Firebase UID');
+      if (memberUid === state.ownerUid) return toast('The trip owner cannot be removed');
+
+      const displayName = memberName || memberEmail || 'this member';
+      const confirmed = confirm(
+        `Remove ${displayName} from this trip?\n\nThey will immediately lose access and the trip will disappear from their My Trips page.\n\nImportant: if they still have an active reusable invitation link, they can rejoin until you revoke that link.`
+      );
+      if (!confirmed) return;
+
+      try {
+        // First revoke actual trip membership. Keep this independent from optional
+        // email-invite cleanup so link-invited members can always be removed even
+        // when no matching email invitation document exists.
+        const batch = db.batch();
+
+        batch.update(tripRef, {
+          memberUids: firebase.firestore.FieldValue.arrayRemove(memberUid),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        batch.delete(tripRef.collection('members').doc(memberUid));
+        await batch.commit();
+
+        state.memberUids = (state.memberUids || []).filter(uid => uid !== memberUid);
+
+        // Best-effort cleanup of any manual email pre-approval for the same user.
+        // A member who joined only through a reusable link may have no such records.
+        const normalizedMemberEmail = normalizeEmail(memberEmail);
+        if (normalizedMemberEmail) {
+          try {
+            await tripRef.collection('emailInvites').doc(normalizedMemberEmail).delete();
+          } catch (cleanupError) {
+            console.warn('No nested email invite to remove, or cleanup was denied:', cleanupError);
+          }
+
+          try {
+            await db.collection('emailInviteLookup')
+              .doc(emailInviteLookupId(tripId, normalizedMemberEmail))
+              .delete();
+          } catch (cleanupError) {
+            console.warn('No email invite lookup to remove, or cleanup was denied:', cleanupError);
+          }
+        }
+
+        toast(`${displayName} removed from the trip`);
+        await loadTripMembers();
+        if (isTripOwner()) await loadManualEmailInvites();
+
+      } catch (error) {
+        toast(`Could not remove member: ${error.message}`);
+      }
+    }
+
     async function loadTripMembers() {
       if (!tripRef) return;
 
@@ -3629,9 +3715,13 @@
         }
 
         if (!members.length) {
+          $('memberRemovalHint').classList.add('hidden');
           $('memberList').innerHTML = '<div class="launcherMessage">No member profiles yet.</div>';
           return;
         }
+
+        const ownerViewing = isTripOwner();
+        $('memberRemovalHint').classList.toggle('hidden', !ownerViewing);
 
         $('memberList').innerHTML = members.map(member => {
           const name = member.displayName || member.email || 'Trip member';
@@ -3639,7 +3729,22 @@
           const avatar = member.photoURL
             ? `<img class="userAvatar" src="${esc(member.photoURL)}" alt="">`
             : `<span class="userAvatarFallback">${esc(firstLetter)}</span>`;
-          const owner = member.uid === state.ownerUid || member.id === state.ownerUid;
+          const memberUid = member.uid || member.id || '';
+          const owner = memberUid === state.ownerUid;
+
+          const role = owner
+            ? '<span class="roleBadge">👑 Owner</span>'
+            : '<span class="roleBadge" style="background:var(--sage-soft);color:#55634c">🌿 Member</span>';
+
+          const removeButton = ownerViewing && !owner
+            ? `<button
+                 class="small danger memberRemoveBtn"
+                 data-remove-member-uid="${esc(memberUid)}"
+                 data-remove-member-name="${esc(name)}"
+                 data-remove-member-email="${esc(member.email || '')}">
+                 Remove
+               </button>`
+            : '';
 
           return `
             <div class="memberRow">
@@ -3648,9 +3753,18 @@
                 <div class="memberRowName">${esc(name)}</div>
                 <div class="memberRowEmail">${esc(member.email || '')}</div>
               </div>
-              ${owner ? '<span class="roleBadge">👑 Owner</span>' : '<span class="roleBadge" style="background:var(--sage-soft);color:#55634c">🌿 Member</span>'}
+              ${role}
+              ${removeButton}
             </div>`;
         }).join('');
+
+        [...$('memberList').querySelectorAll('[data-remove-member-uid]')].forEach(button => {
+          button.onclick = () => removeTripMember(
+            button.dataset.removeMemberUid,
+            button.dataset.removeMemberName,
+            button.dataset.removeMemberEmail
+          );
+        });
 
       } catch (error) {
         $('memberList').innerHTML = `<div class="launcherMessage">Could not load members.<br><span class="meta">${esc(error.message)}</span></div>`;
@@ -3854,64 +3968,60 @@
     function renderCalendarView() {
       if (!$('calendarView')) return;
 
-      let dates = tripDates();
+      // tripDates() returns every date from tripStartDate through tripEndDate.
+      // If trip dates are unavailable, it falls back to event dates.
+      const travelDateKeys = tripDates();
       const sorted = sortedEvents();
-      if (!dates.length) dates = [...new Set(sorted.map(event => event.date).filter(Boolean))].sort();
 
-      if (!dates.length) {
-        $('calendarView').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">📆</div><b>No calendar dates yet</b><div class="hint" style="margin-top:5px">Set the trip dates or add your first event to start building the calendar.</div></div>`;
+      if (!travelDateKeys.length) {
+        $('calendarView').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">📆</div><b>No travel dates yet</b><div class="hint" style="margin-top:5px">Set the trip start and end dates to build the calendar.</div></div>`;
         return;
       }
 
-      let start = parseLocalDate(dates[0]);
-      let end = parseLocalDate(dates[dates.length - 1]);
-      if (!start || !end) {
-        $('calendarView').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">📆</div><b>Calendar view is not ready yet</b><div class="hint" style="margin-top:5px">Please add valid trip dates or event dates.</div></div>`;
+      const travelDates = travelDateKeys
+        .map(key => ({ key, date: parseLocalDate(key) }))
+        .filter(item => item.date);
+
+      if (!travelDates.length) {
+        $('calendarView').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">📆</div><b>Calendar view is not ready yet</b><div class="hint" style="margin-top:5px">Please add valid trip dates.</div></div>`;
         return;
       }
-
-      if (selectedPlanDate !== 'all') {
-        const selected = parseLocalDate(selectedPlanDate);
-        if (selected) {
-          start = startOfWeek(selected);
-          end = endOfWeek(selected);
-        }
-      } else {
-        start = startOfWeek(start);
-        end = endOfWeek(end);
-      }
-
-      const dateSet = new Set(tripDates());
-      sorted.forEach(event => { if (event.date) dateSet.add(event.date); });
 
       const byDate = new Map();
       sorted.forEach(event => {
+        // Calendar intentionally ignores events outside the trip's travel dates.
+        if (!travelDateKeys.includes(event.date)) return;
         if (!byDate.has(event.date)) byDate.set(event.date, []);
         byDate.get(event.date).push(event);
       });
 
-      const weeks = [];
-      let cursor = new Date(start);
-      while (cursor <= end) {
-        const weekDates = [];
-        for (let i = 0; i < 7; i += 1) {
-          weekDates.push(new Date(cursor));
-          cursor.setDate(cursor.getDate() + 1);
-        }
-        weeks.push(weekDates);
+      // Keep the familiar 7-column rhythm, but never pad with dates outside the trip.
+      // A shorter final row contains only the remaining travel dates.
+      const rows = [];
+      for (let i = 0; i < travelDates.length; i += 7) {
+        rows.push(travelDates.slice(i, i + 7));
       }
 
+      const startLabel = formatDateShort(travelDateKeys[0]);
+      const endLabel = formatDateShort(travelDateKeys[travelDateKeys.length - 1]);
+
       $('calendarView').innerHTML = `
+        <div class="calendarTravelDatesNote">
+          ✈️ Showing travel dates only: ${esc(startLabel)} → ${esc(endLabel)}
+        </div>
         <div class="calendarWrap">
-          ${weeks.map(week => `
-            <div class="calendarWeek">
-              ${week.map(day => {
-                const key = dateKey(day);
+          ${rows.map(row => `
+            <div
+              class="calendarWeek"
+              style="grid-template-columns:repeat(${row.length}, minmax(130px, 1fr));min-width:${Math.max(row.length * 138, 280)}px">
+              ${row.map(item => {
+                const key = item.key;
+                const day = item.date;
                 const events = byDate.get(key) || [];
-                const inRange = dateSet.has(key);
                 const selected = selectedPlanDate === key;
+
                 return `
-                  <div class="calendarDay ${inRange ? '' : 'outOfRange'} ${selected ? 'selected' : ''}">
+                  <div class="calendarDay ${selected ? 'selected' : ''}">
                     <div class="calendarDayHeader">
                       <div>
                         <div class="calendarDow">${esc(day.toLocaleDateString(undefined, { weekday: 'short' }))}</div>
@@ -3921,7 +4031,9 @@
                       <div class="calendarCount">${events.length} ${events.length === 1 ? 'item' : 'items'}</div>
                     </div>
                     <div class="calendarEvents">
-                      ${events.length ? events.map(event => eventCardMini(event)).join('') : `<div class="calendarEmptyMini">${inRange ? 'No plans yet' : 'Outside trip range'}</div>`}
+                      ${events.length
+                        ? events.map(event => eventCardMini(event)).join('')
+                        : '<div class="calendarEmptyMini">No plans yet</div>'}
                     </div>
                   </div>`;
               }).join('')}
