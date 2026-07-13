@@ -837,6 +837,155 @@
       text-align: center;
     }
 
+
+    .migrationCard {
+      border: 1px solid #d6dfcf;
+      background: linear-gradient(180deg, rgba(231,240,223,.88), rgba(255,250,243,.94));
+    }
+
+    .migrationCard .migrationIcon {
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--sage-soft);
+      color: #55634c;
+      flex: 0 0 auto;
+    }
+
+    .migrationTripNames {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .migrationAction {
+      width: 100%;
+      margin-top: 12px;
+      background: linear-gradient(135deg, var(--teal), var(--mauve));
+    }
+
+    .inviteHero {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(220,232,227,.72), rgba(255,250,243,.84));
+    }
+
+    .inviteHeroTitle {
+      font-weight: 950;
+      color: var(--ink-strong);
+      font-size: 16px;
+    }
+
+    .inviteLinkBox {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .inviteLinkBox input {
+      min-width: 0;
+      font-size: 12px;
+    }
+
+    .inviteActions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .memberList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .memberRow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255,253,248,.86);
+    }
+
+    .memberRow .userAvatar,
+    .memberRow .userAvatarFallback {
+      width: 34px;
+      height: 34px;
+    }
+
+    .memberRowCopy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .memberRowName {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--ink-strong);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .memberRowEmail {
+      font-size: 10px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .roleBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      background: var(--gold-soft);
+      color: #806c47;
+      white-space: nowrap;
+    }
+
+    .inviteJoinScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background:
+        radial-gradient(circle at 14% 8%, rgba(189,136,139,.16), transparent 30%),
+        radial-gradient(circle at 86% 16%, rgba(102,143,135,.18), transparent 28%),
+        linear-gradient(180deg, var(--paper), var(--paper-deep));
+    }
+
+    .inviteJoinCard {
+      width: min(440px, 100%);
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .inviteJoinCard h2 {
+      margin: 8px 0 0;
+      color: var(--ink-strong);
+    }
+
     .launcherMessage {
       padding: 24px 16px;
       text-align: center;
@@ -1446,6 +1595,32 @@
       </button>
     </div>
 
+
+    <section id="migrationCard" class="launcherSection migrationCard hidden">
+      <div class="row" style="align-items:flex-start;flex-wrap:nowrap">
+        <div class="migrationIcon">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 4 7v5c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-4Z"/>
+            <path d="m8.5 12 2.2 2.2L15.8 9"/>
+          </svg>
+        </div>
+        <div style="min-width:0;flex:1">
+          <h3 style="margin:0">Secure your existing trips</h3>
+          <div class="hint" style="margin-top:4px">
+            These older trips do not yet have an owner or member list. Claim them now with your Google account before publishing the stricter Firestore rules.
+          </div>
+          <div id="migrationTripNames" class="migrationTripNames"></div>
+          <button id="claimLegacyTripsBtn" class="migrationAction iconText">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3 4 7v5c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-4Z"/>
+              <path d="m8.5 12 2.2 2.2L15.8 9"/>
+            </svg>
+            Secure my existing trips
+          </button>
+        </div>
+      </div>
+    </section>
+
     <section class="launcherSection">
       <div class="launcherSectionHeader">
         <div class="cardTitle" style="margin:0">
@@ -1937,12 +2112,116 @@
     </div>
   </div>
 
+
+  <!-- Invite friends / members modal. -->
+  <div id="inviteWrap" class="modalWrap">
+    <div class="modal">
+      <div class="top">
+        <div class="cardTitle" style="margin:0">
+          <span class="sectionIcon sage">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M19 8v6M16 11h6"/>
+            </svg>
+          </span>
+          <h2>Invite Friends</h2>
+        </div>
+        <button id="closeInvite" class="small ghost">Close</button>
+      </div>
+
+      <div id="legacyInviteNotice" class="inviteHero hidden">
+        <div class="inviteHeroTitle">🌱 Secure this legacy trip first</div>
+        <div class="hint" style="margin-top:5px">
+          This trip was created before owner/member security was added.
+        </div>
+        <button id="claimCurrentTripBtn" class="secondary iconText" style="width:100%;margin-top:10px">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 4 7v5c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-4Z"/>
+            <path d="m8.5 12 2.2 2.2L15.8 9"/>
+          </svg>
+          Claim this trip as owner
+        </button>
+      </div>
+
+      <div id="inviteOwnerControls" class="inviteHero hidden">
+        <div class="inviteHeroTitle">🔗 Reusable group invitation</div>
+        <div class="hint" style="margin-top:5px">
+          Send this link in WhatsApp or your group chat. Friends sign in with Google and join this trip automatically.
+        </div>
+
+        <div id="noActiveInvite">
+          <button id="createInviteBtn" class="iconText" style="width:100%;margin-top:12px">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/>
+              <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>
+            </svg>
+            Create invitation link
+          </button>
+        </div>
+
+        <div id="activeInviteBox" class="hidden">
+          <div class="inviteLinkBox">
+            <input id="inviteLinkInput" readonly />
+            <button id="copyInviteBtn" class="small secondary">Copy</button>
+          </div>
+          <div class="inviteActions">
+            <button id="revokeInviteBtn" class="small danger">Revoke link</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="memberInviteNotice" class="inviteHero hidden">
+        <div class="inviteHeroTitle">🌿 You are a trip member</div>
+        <div class="hint" style="margin-top:5px">
+          The trip owner manages invitation links. You can continue collaborating normally.
+        </div>
+      </div>
+
+      <div class="cardTitle" style="margin-top:16px">
+        <span class="sectionIcon peach">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </span>
+        <div>
+          <h3 style="margin:0">Trip members</h3>
+          <div class="hint">Google accounts that have joined this trip.</div>
+        </div>
+      </div>
+      <div id="memberList" class="memberList">
+        <div class="launcherMessage">Loading members…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shown briefly while an invitation is being accepted. -->
+  <main id="inviteJoinScreen" class="inviteJoinScreen hidden">
+    <section class="inviteJoinCard">
+      <div class="authMark">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M2 13.5 22 12l-8.2 4.4L12 22l-2.3-5.1L2 13.5Z"/>
+          <path d="m9.7 16.9 4.1-16.4 2.2 2.2-2 8.8"/>
+          <path d="M2 13.5 5.7 10l3.3.7"/>
+        </svg>
+      </div>
+      <h2 id="inviteJoinTitle">Joining trip…</h2>
+      <div id="inviteJoinMessage" class="hint" style="margin-top:8px">Checking your invitation.</div>
+      <button id="inviteJoinHomeBtn" class="secondary hidden" style="width:100%;margin-top:14px">Back to My Trips</button>
+    </section>
+  </main>
+
   <div id="toast" class="toast"></div>
 
   <script>
     const CURRENCIES = ['HKD','THB','USD','TWD','JPY','CNY','SGD','EUR','GBP','AUD','KRW','MYR','NZD','CAD','CHF'];
 
-    let tripId = new URLSearchParams(location.search).get('trip');
+    const initialUrlParams = new URLSearchParams(location.search);
+    let tripId = initialUrlParams.get('trip');
+    let inviteToken = initialUrlParams.get('invite');
     let tripRef = null;
     let db = null;
     let authReady = false;
@@ -1958,6 +2237,8 @@
     let unsubscribeEvents = null;
     let unsubscribeTripList = null;
     let launcherTrips = [];
+    let legacyTrips = [];
+    let activeInviteToken = '';
     let selectedPlanDate = 'all';
     let selectedPlanView = 'itinerary';
     let editingEventId = null;
@@ -1969,6 +2250,8 @@
       defaultCurrency: 'THB',
       tripStartDate: '',
       tripEndDate: '',
+      ownerUid: '',
+      memberUids: [],
       fxRates: {
         HKD: 1,
         THB: .22,
@@ -2131,6 +2414,40 @@
       url.search = '';
       url.searchParams.set('trip', id);
       return url.toString();
+    }
+
+    function inviteUrl(id, token) {
+      const url = new URL(location.href);
+      url.search = '';
+      url.searchParams.set('trip', id);
+      url.searchParams.set('invite', token);
+      return url.toString();
+    }
+
+    function secureToken() {
+      const first = uuid().replace(/-/g, '');
+      const second = uuid().replace(/-/g, '');
+      return `${first}${second}`;
+    }
+
+    function currentUserProfile() {
+      return {
+        uid: currentUser?.uid || '',
+        displayName: currentUser?.displayName || currentUser?.email || 'Friend',
+        email: currentUser?.email || '',
+        photoURL: currentUser?.photoURL || '',
+        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+    }
+
+    function isTripOwner(trip = state) {
+      return !!currentUser?.uid && trip?.ownerUid === currentUser.uid;
+    }
+
+    function isTripMember(trip = state) {
+      return !!currentUser?.uid
+        && Array.isArray(trip?.memberUids)
+        && trip.memberUids.includes(currentUser.uid);
     }
 
     function goHome() {
@@ -2313,37 +2630,118 @@
     async function startLauncher() {
       showLauncher();
       launcherStatus('Connecting…');
+
       try {
         await initFirebase();
         launcherStatus('Connected');
 
-        unsubscribeTripList = db.collection('trips').onSnapshot(snapshot => {
-          const trips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          trips.sort((a, b) => {
-            const bTime = timestampMillis(b.updatedAt || b.createdAt);
-            const aTime = timestampMillis(a.updatedAt || a.createdAt);
-            return bTime - aTime;
+        if (unsubscribeTripList) {
+          unsubscribeTripList();
+          unsubscribeTripList = null;
+        }
+
+        // Normal secure launcher query: only trips where this Google UID is a member.
+        unsubscribeTripList = db.collection('trips')
+          .where('memberUids', 'array-contains', currentUser.uid)
+          .onSnapshot(snapshot => {
+            const trips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            trips.sort((a, b) => {
+              const bTime = timestampMillis(b.updatedAt || b.createdAt);
+              const aTime = timestampMillis(a.updatedAt || a.createdAt);
+              return bTime - aTime;
+            });
+
+            launcherTrips = trips;
+            renderTripList(trips);
+            launcherStatus(`${trips.length} trip${trips.length === 1 ? '' : 's'} available`);
+          }, error => {
+            launcherStatus(`Could not load your trips: ${error.message}`);
+            $('tripList').innerHTML = `<div class="launcherMessage">I couldn't load your member trips from Firebase.<br><span class="meta">${esc(error.message)}</span></div>`;
           });
-          launcherTrips = trips;
-          renderTripList(trips);
-          launcherStatus(`${trips.length} trip${trips.length === 1 ? '' : 's'} available`);
-        }, error => {
-          if (isPermissionDenied(error)) {
-            launcherStatus('Access denied');
-            $('tripList').innerHTML = `
-              <div class="accessDeniedPanel">
-                <b>🔒 This Google account is not approved yet.</b>
-                <div style="margin-top:6px">Signed in as ${esc(currentUser?.email || 'unknown account')}.</div>
-                <div class="meta" style="margin-top:6px">Add this email to your Firestore approved-friend rules, then reload.</div>
-              </div>`;
-            return;
-          }
-          launcherStatus(`Could not load trips: ${error.message}`);
-          $('tripList').innerHTML = `<div class="launcherMessage">I couldn't load existing trips from Firebase.<br><span class="meta">${esc(error.message)}</span></div>`;
-        });
+
+        // While the old permissive rules are still active, scan for legacy trips that
+        // do not yet have ownerUid/memberUids. After secure rules are published this
+        // broad query will be denied, which is expected; the migration card then stays hidden.
+        await scanLegacyTripsForMigration();
+
       } catch (error) {
         launcherStatus(`Connection error: ${error.message}`);
         $('tripList').innerHTML = `<div class="launcherMessage">Firebase is not available.<br><span class="meta">${esc(error.message)}</span></div>`;
+      }
+    }
+
+    async function scanLegacyTripsForMigration() {
+      legacyTrips = [];
+      $('migrationCard').classList.add('hidden');
+
+      try {
+        const snapshot = await db.collection('trips').get();
+        legacyTrips = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(trip => !trip.ownerUid || !Array.isArray(trip.memberUids) || !trip.memberUids.length);
+
+        if (!legacyTrips.length) return;
+
+        $('migrationTripNames').innerHTML = legacyTrips
+          .slice(0, 8)
+          .map(trip => `✈️ ${esc(trip.tripName || trip.id)}`)
+          .join('<br>');
+
+        if (legacyTrips.length > 8) {
+          $('migrationTripNames').innerHTML += `<br>…and ${legacyTrips.length - 8} more`;
+        }
+
+        $('migrationCard').classList.remove('hidden');
+      } catch (error) {
+        // Expected after member-based Firestore rules are enabled.
+        $('migrationCard').classList.add('hidden');
+      }
+    }
+
+    async function claimLegacyTrips() {
+      if (!legacyTrips.length) return toast('No legacy trips found');
+
+      const names = legacyTrips.map(trip => trip.tripName || trip.id).join('\n• ');
+      const confirmed = confirm(
+        `Secure ${legacyTrips.length} existing trip${legacyTrips.length === 1 ? '' : 's'} with your Google account as owner?\n\n• ${names}\n\nDo this before publishing the new member-based Firestore rules.`
+      );
+      if (!confirmed) return;
+
+      const button = $('claimLegacyTripsBtn');
+      button.disabled = true;
+      button.textContent = 'Securing trips…';
+
+      try {
+        for (const trip of legacyTrips) {
+          const ref = db.collection('trips').doc(trip.id);
+
+          await ref.set({
+            ownerUid: trip.ownerUid || currentUser.uid,
+            ownerEmail: trip.ownerEmail || currentUser.email || '',
+            ownerName: trip.ownerName || currentUser.displayName || currentUser.email || 'Owner',
+            memberUids: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+            securityVersion: 2,
+            securityMigratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+
+          await ref.collection('members').doc(currentUser.uid).set(currentUserProfile(), { merge: true });
+        }
+
+        toast('Existing trips secured');
+        $('migrationCard').classList.add('hidden');
+        await scanLegacyTripsForMigration();
+
+      } catch (error) {
+        toast(`Could not secure existing trips: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.innerHTML = `
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 4 7v5c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-4Z"/>
+            <path d="m8.5 12 2.2 2.2L15.8 9"/>
+          </svg>
+          Secure my existing trips`;
       }
     }
 
@@ -2402,7 +2800,7 @@
                   ? `<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg> Reopen`
                   : `<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.7 2.7L16.5 9"/></svg> Mark settled`}
               </button>
-              ${isCurrentUserAdmin() ? `
+              ${isTripOwner(trip) ? `
                 <button class="tripActionBtn delete iconText" data-delete-trip-id="${esc(trip.id)}">
                   <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>
                   Delete
@@ -2487,14 +2885,21 @@
         launcherStatus(`Deleting ${name}…`);
 
         const ref = db.collection('trips').doc(id);
-        const [expensesSnapshot, eventsSnapshot] = await Promise.all([
+        const [expensesSnapshot, eventsSnapshot, membersSnapshot, invitesSnapshot] = await Promise.all([
           ref.collection('expenses').get(),
-          ref.collection('events').get()
+          ref.collection('events').get(),
+          ref.collection('members').get(),
+          ref.collection('invites').get()
         ]);
 
         // Firestore does not automatically delete subcollections when a parent document is deleted.
-        // Delete expenses and itinerary events in safe batches first, then delete the trip document.
-        const docs = [...expensesSnapshot.docs, ...eventsSnapshot.docs];
+        // Clean up all subcollections created by this app before deleting the trip document.
+        const docs = [
+          ...expensesSnapshot.docs,
+          ...eventsSnapshot.docs,
+          ...membersSnapshot.docs,
+          ...invitesSnapshot.docs
+        ];
         const batchSize = 400;
 
         for (let i = 0; i < docs.length; i += batchSize) {
@@ -2546,28 +2951,53 @@
     }
 
     async function createNewTrip() {
-      const button = $('createTripBtn');
       const name = $('newTripName').value.trim();
-      const people = parsePeople($('newTripPeople').value);
+      const people = $('newTripPeople').value
+        .split(/[\n,]+/)
+        .map(value => value.trim())
+        .filter(Boolean);
       const baseCurrency = $('newTripBase').value;
       const defaultCurrency = $('newTripDefault').value;
-      const tripStartDate = $('newTripStartDate').value || '';
-      const tripEndDate = $('newTripEndDate').value || '';
+      const tripStartDate = $('newTripStartDate').value;
+      const tripEndDate = $('newTripEndDate').value;
 
       if (!name) return toast('Enter a trip name');
       if (!tripStartDate) return toast('Choose a trip start date');
       if (!tripEndDate) return toast('Choose a trip end date');
       if (tripEndDate < tripStartDate) return toast('Trip end date must be on or after the start date');
       if (!people.length) return toast('Add at least one person');
+      if (!currentUser?.uid) return toast('Please sign in again');
 
+      const button = $('createTripBtn');
       button.disabled = true;
       button.textContent = 'Creating…';
 
       try {
         await initFirebase();
+
         const id = uuid();
-        const fxRates = { ...state.fxRates, [baseCurrency]: 1 };
-        await db.collection('trips').doc(id).set({
+        const ref = db.collection('trips').doc(id);
+
+        const fxRates = {
+          HKD: 1,
+          THB: .22,
+          USD: 7.8,
+          TWD: .24,
+          JPY: .052,
+          CNY: 1.08,
+          SGD: 5.8,
+          EUR: 8.5,
+          GBP: 9.9,
+          AUD: 5.1,
+          KRW: .0057,
+          MYR: 1.65,
+          NZD: 4.6,
+          CAD: 5.7,
+          CHF: 8.8
+        };
+        fxRates[baseCurrency] = 1;
+
+        await ref.set({
           tripName: name,
           people,
           baseCurrency,
@@ -2576,10 +3006,19 @@
           tripEndDate,
           fxRates,
           settled: false,
+          ownerUid: currentUser.uid,
+          ownerEmail: currentUser.email || '',
+          ownerName: currentUser.displayName || currentUser.email || 'Owner',
+          memberUids: [currentUser.uid],
+          securityVersion: 2,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
+        await ref.collection('members').doc(currentUser.uid).set(currentUserProfile(), { merge: true });
+
         goToTrip(id);
+
       } catch (error) {
         toast(`Could not create trip: ${error.message}`);
         button.disabled = false;
@@ -2587,30 +3026,317 @@
       }
     }
 
-    function extractTripId(value) {
+    function extractSharedAccess(value) {
       const raw = String(value || '').trim();
-      if (!raw) return '';
+      if (!raw) return { tripId: '', inviteToken: '' };
+
       try {
         const url = new URL(raw);
-        return url.searchParams.get('trip') || '';
+        return {
+          tripId: url.searchParams.get('trip') || '',
+          inviteToken: url.searchParams.get('invite') || ''
+        };
       } catch {
-        return raw;
+        return { tripId: raw, inviteToken: '' };
       }
     }
 
     async function openSharedTrip() {
-      const id = extractTripId($('sharedTripInput').value);
-      if (!id) return toast('Paste a trip link or trip ID');
+      const access = extractSharedAccess($('sharedTripInput').value);
+      if (!access.tripId) return toast('Paste a trip link or trip ID');
+
+      if (access.inviteToken) {
+        location.href = inviteUrl(access.tripId, access.inviteToken);
+        return;
+      }
+
       try {
         await initFirebase();
-        const snapshot = await db.collection('trips').doc(id).get();
+        const snapshot = await db.collection('trips').doc(access.tripId).get();
         if (!snapshot.exists) return toast('That trip does not exist');
-        goToTrip(id);
+        goToTrip(access.tripId);
       } catch (error) {
+        if (isPermissionDenied(error)) {
+          toast('You are not a member of that trip. Ask the owner for an invitation link.');
+          return;
+        }
         toast(`Could not open trip: ${error.message}`);
       }
     }
 
+
+
+    async function claimCurrentTripAsOwner() {
+      if (!tripId || !currentUser?.uid) return;
+
+      const ref = db.collection('trips').doc(tripId);
+      try {
+        await ref.set({
+          ownerUid: currentUser.uid,
+          ownerEmail: currentUser.email || '',
+          ownerName: currentUser.displayName || currentUser.email || 'Owner',
+          memberUids: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+          securityVersion: 2,
+          securityMigratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        await ref.collection('members').doc(currentUser.uid).set(currentUserProfile(), { merge: true });
+
+        state.ownerUid = currentUser.uid;
+        state.memberUids = Array.from(new Set([...(state.memberUids || []), currentUser.uid]));
+        toast('Trip secured with your Google account');
+        await openInviteModal();
+
+      } catch (error) {
+        toast(`Could not claim this trip: ${error.message}`);
+      }
+    }
+
+    async function openInviteModal() {
+      if (!tripId || !tripRef) return toast('Trip is not ready yet');
+
+      $('inviteWrap').classList.add('show');
+      $('legacyInviteNotice').classList.add('hidden');
+      $('inviteOwnerControls').classList.add('hidden');
+      $('memberInviteNotice').classList.add('hidden');
+      $('activeInviteBox').classList.add('hidden');
+      $('noActiveInvite').classList.remove('hidden');
+      $('memberList').innerHTML = '<div class="launcherMessage">Loading members…</div>';
+
+      try {
+        const tripSnapshot = await tripRef.get();
+        if (!tripSnapshot.exists) return;
+
+        const trip = { id: tripSnapshot.id, ...tripSnapshot.data() };
+        state.ownerUid = trip.ownerUid || '';
+        state.memberUids = trip.memberUids || [];
+
+        if (!trip.ownerUid || !Array.isArray(trip.memberUids) || !trip.memberUids.length) {
+          $('legacyInviteNotice').classList.remove('hidden');
+        } else if (isTripOwner(trip)) {
+          $('inviteOwnerControls').classList.remove('hidden');
+          await loadActiveInvite();
+        } else {
+          $('memberInviteNotice').classList.remove('hidden');
+        }
+
+        await loadTripMembers();
+
+      } catch (error) {
+        toast(`Could not load sharing details: ${error.message}`);
+      }
+    }
+
+    function closeInviteModal() {
+      $('inviteWrap').classList.remove('show');
+    }
+
+    async function loadActiveInvite() {
+      activeInviteToken = '';
+      $('activeInviteBox').classList.add('hidden');
+      $('noActiveInvite').classList.remove('hidden');
+
+      try {
+        const snapshot = await tripRef.collection('invites')
+          .where('active', '==', true)
+          .limit(1)
+          .get();
+
+        if (snapshot.empty) return;
+
+        const doc = snapshot.docs[0];
+        activeInviteToken = doc.id;
+        $('inviteLinkInput').value = inviteUrl(tripId, activeInviteToken);
+        $('activeInviteBox').classList.remove('hidden');
+        $('noActiveInvite').classList.add('hidden');
+
+      } catch (error) {
+        toast(`Could not load invitation: ${error.message}`);
+      }
+    }
+
+    async function createInviteLink() {
+      if (!isTripOwner()) return toast('Only the trip owner can create invitations');
+
+      const button = $('createInviteBtn');
+      button.disabled = true;
+      button.textContent = 'Creating link…';
+
+      try {
+        const token = secureToken();
+        await tripRef.collection('invites').doc(token).set({
+          tripId,
+          active: true,
+          createdByUid: currentUser.uid,
+          createdByEmail: currentUser.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        activeInviteToken = token;
+        $('inviteLinkInput').value = inviteUrl(tripId, token);
+        $('activeInviteBox').classList.remove('hidden');
+        $('noActiveInvite').classList.add('hidden');
+        toast('Invitation link created');
+
+      } catch (error) {
+        toast(`Could not create invitation: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.innerHTML = `
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/>
+            <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>
+          </svg>
+          Create invitation link`;
+      }
+    }
+
+    async function copyInviteLink() {
+      const value = $('inviteLinkInput').value;
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        toast('Invitation link copied');
+      } catch {
+        prompt('Copy invitation link', value);
+      }
+    }
+
+    async function revokeInviteLink() {
+      if (!activeInviteToken || !isTripOwner()) return;
+      if (!confirm('Revoke this invitation link? Existing members keep access, but the link can no longer be used to join.')) return;
+
+      try {
+        await tripRef.collection('invites').doc(activeInviteToken).set({
+          active: false,
+          revokedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        activeInviteToken = '';
+        $('activeInviteBox').classList.add('hidden');
+        $('noActiveInvite').classList.remove('hidden');
+        toast('Invitation revoked');
+
+      } catch (error) {
+        toast(`Could not revoke invitation: ${error.message}`);
+      }
+    }
+
+    async function loadTripMembers() {
+      if (!tripRef) return;
+
+      try {
+        const snapshot = await tripRef.collection('members').get();
+        const members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Legacy trips might have membership metadata but no member profile document yet.
+        if (!members.length && currentUser && isTripMember()) {
+          members.push({
+            id: currentUser.uid,
+            uid: currentUser.uid,
+            displayName: currentUser.displayName || currentUser.email || 'Member',
+            email: currentUser.email || '',
+            photoURL: currentUser.photoURL || ''
+          });
+        }
+
+        if (!members.length) {
+          $('memberList').innerHTML = '<div class="launcherMessage">No member profiles yet.</div>';
+          return;
+        }
+
+        $('memberList').innerHTML = members.map(member => {
+          const name = member.displayName || member.email || 'Trip member';
+          const firstLetter = String(name).trim().charAt(0).toUpperCase() || '✈';
+          const avatar = member.photoURL
+            ? `<img class="userAvatar" src="${esc(member.photoURL)}" alt="">`
+            : `<span class="userAvatarFallback">${esc(firstLetter)}</span>`;
+          const owner = member.uid === state.ownerUid || member.id === state.ownerUid;
+
+          return `
+            <div class="memberRow">
+              ${avatar}
+              <div class="memberRowCopy">
+                <div class="memberRowName">${esc(name)}</div>
+                <div class="memberRowEmail">${esc(member.email || '')}</div>
+              </div>
+              ${owner ? '<span class="roleBadge">👑 Owner</span>' : '<span class="roleBadge" style="background:var(--sage-soft);color:#55634c">🌿 Member</span>'}
+            </div>`;
+        }).join('');
+
+      } catch (error) {
+        $('memberList').innerHTML = `<div class="launcherMessage">Could not load members.<br><span class="meta">${esc(error.message)}</span></div>`;
+      }
+    }
+
+    async function acceptInvitation() {
+      $('authScreen').classList.add('hidden');
+      $('launcherScreen').classList.add('hidden');
+      $('tripApp').classList.add('hidden');
+      $('inviteJoinScreen').classList.remove('hidden');
+      $('inviteJoinHomeBtn').classList.add('hidden');
+      $('inviteJoinTitle').textContent = 'Joining trip…';
+      $('inviteJoinMessage').textContent = 'Checking your invitation.';
+
+      if (!tripId || !inviteToken) {
+        $('inviteJoinTitle').textContent = 'Invitation is incomplete';
+        $('inviteJoinMessage').textContent = 'The invitation link is missing the trip ID or invitation token.';
+        $('inviteJoinHomeBtn').classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await initFirebase();
+
+        const targetTripRef = db.collection('trips').doc(tripId);
+        const inviteRef = targetTripRef.collection('invites').doc(inviteToken);
+
+        const inviteSnapshot = await inviteRef.get();
+        if (!inviteSnapshot.exists || inviteSnapshot.data().active !== true) {
+          throw new Error('This invitation is invalid or has been revoked.');
+        }
+
+        // If the user is already a member, just open the trip.
+        try {
+          const existingTrip = await targetTripRef.get();
+          if (
+            existingTrip.exists
+            && Array.isArray(existingTrip.data().memberUids)
+            && existingTrip.data().memberUids.includes(currentUser.uid)
+          ) {
+            await targetTripRef.collection('members').doc(currentUser.uid).set(currentUserProfile(), { merge: true });
+            goToTrip(tripId);
+            return;
+          }
+        } catch (error) {
+          // A non-member is expected to be unable to read the trip under secure rules.
+        }
+
+        $('inviteJoinMessage').textContent = 'Adding your Google account to the trip…';
+
+        // The future Firestore rules validate lastJoinInviteToken against the active
+        // invite document before allowing a non-member to add only their own UID.
+        await targetTripRef.update({
+          memberUids: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+          lastJoinInviteToken: inviteToken,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        await targetTripRef.collection('members').doc(currentUser.uid).set(currentUserProfile(), { merge: true });
+
+        $('inviteJoinTitle').textContent = 'You joined the trip ✈️';
+        $('inviteJoinMessage').textContent = 'Opening the trip now…';
+        setTimeout(() => goToTrip(tripId), 450);
+
+      } catch (error) {
+        $('inviteJoinTitle').textContent = 'Could not join this trip';
+        $('inviteJoinMessage').textContent = error.message || 'The invitation could not be accepted.';
+        $('inviteJoinHomeBtn').classList.remove('hidden');
+      }
+    }
 
     const EVENT_TYPE_EMOJI = {
       'Meal': '🍽️',
@@ -3499,6 +4225,13 @@
       $('googleSignInBtn').onclick = signInWithGoogle;
       $('launcherSignOutBtn').onclick = signOutUser;
       $('tripSignOutBtn').onclick = signOutUser;
+      $('claimLegacyTripsBtn').onclick = claimLegacyTrips;
+      $('closeInvite').onclick = closeInviteModal;
+      $('claimCurrentTripBtn').onclick = claimCurrentTripAsOwner;
+      $('createInviteBtn').onclick = createInviteLink;
+      $('copyInviteBtn').onclick = copyInviteLink;
+      $('revokeInviteBtn').onclick = revokeInviteLink;
+      $('inviteJoinHomeBtn').onclick = goHome;
 
       document.querySelectorAll('.tab').forEach(tab => {
         tab.onclick = () => activateView(tab.dataset.view);
@@ -3547,7 +4280,7 @@
         }
       };
 
-      $('shareBtn').onclick = copyCurrentTripLink;
+      $('shareBtn').onclick = openInviteModal;
       $('copyLink').onclick = copyCurrentTripLink;
 
       $('exportBtn').onclick = () => {
@@ -3596,6 +4329,9 @@
       $('eventWrap').addEventListener('click', event => {
         if (event.target === $('eventWrap')) closeEventModal();
       });
+      $('inviteWrap').addEventListener('click', event => {
+        if (event.target === $('inviteWrap')) closeInviteModal();
+      });
     }
 
     async function startTrip() {
@@ -3635,6 +4371,8 @@
               defaultCurrency: data.defaultCurrency || state.defaultCurrency,
               tripStartDate: data.tripStartDate || '',
               tripEndDate: data.tripEndDate || '',
+              ownerUid: data.ownerUid || '',
+              memberUids: data.memberUids || [],
               fxRates: { ...state.fxRates, ...(data.fxRates || {}) }
             };
             render();
@@ -3663,7 +4401,7 @@
                 <div class="accessDeniedPanel">
                   <b>🔒 This Google account cannot access this trip.</b>
                   <div style="margin-top:7px">Signed in as ${esc(currentUser?.email || 'unknown account')}.</div>
-                  <div class="meta" style="margin-top:7px">Ask the app owner to approve this email in the Firestore rules.</div>
+                  <div class="meta" style="margin-top:7px">Ask the trip owner for an invitation link, then sign in with Google and open that link.</div>
                   <button class="secondary" onclick="goHome()" style="margin-top:12px">← Back to My Trips</button>
                 </div>
               </div>`;
@@ -3682,6 +4420,12 @@
 
     async function startAuthenticatedApp() {
       renderSignedInUser();
+
+      if (tripId && inviteToken) {
+        await acceptInvitation();
+        return;
+      }
+
       if (tripId) {
         await startTrip();
       } else {
