@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f5efe6" />
-  <title>Trip Expense Split</title>
+  <title>Trip Planner</title>
 
   <script>
     window.onerror = (message, source, line) => {
@@ -575,17 +575,17 @@
     .tripCardActions {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      padding: 10px;
+      gap: 6px;
+      padding: 8px 9px 9px;
       border-top: 1px solid var(--line);
       background: rgba(250, 244, 235, .62);
     }
 
     .tripActionBtn {
-      min-height: 38px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      font-size: 12px;
+      min-height: 32px;
+      padding: 6px 8px;
+      border-radius: 11px;
+      font-size: 11px;
       font-weight: 800;
       justify-content: center;
       box-shadow: none;
@@ -935,6 +935,189 @@
       white-space: pre-wrap;
     }
 
+
+
+    .newTripDatePanel {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(243, 223, 207, .52), rgba(255, 250, 243, .74));
+    }
+
+    .newTripDatePanel .grid {
+      margin-top: 10px;
+      margin-bottom: 0;
+    }
+
+    .requiredMark {
+      color: var(--rose);
+      font-weight: 950;
+    }
+
+    .planViewSwitch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 250, 243, .86);
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .planViewBtn {
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 850;
+      color: var(--muted);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .planViewBtn:hover {
+      transform: none;
+      box-shadow: none;
+      filter: none;
+      background: rgba(255, 255, 255, .45);
+    }
+
+    .planViewBtn.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--teal), var(--mauve));
+      box-shadow: 0 8px 18px rgba(105, 126, 149, .16);
+    }
+
+    .calendarWrap {
+      overflow-x: auto;
+      margin-top: 4px;
+    }
+
+    .calendarWeek {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+      min-width: 1120px;
+    }
+
+    .calendarDay {
+      min-height: 180px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 253, 248, .9);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .calendarDay.outOfRange {
+      opacity: .45;
+      background: rgba(247, 239, 227, .7);
+    }
+
+    .calendarDay.selected {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 2px rgba(86, 148, 159, .12);
+    }
+
+    .calendarDayHeader {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .calendarDow {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .calendarDate {
+      font-size: 18px;
+      font-weight: 950;
+      color: var(--ink-strong);
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .calendarMonthMini {
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .calendarCount {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--soft);
+      padding: 5px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .calendarEvents {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .calendarEvent {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 8px 9px;
+      background: rgba(255, 248, 239, .78);
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .calendarEvent:hover {
+      transform: none;
+      box-shadow: none;
+      border-color: var(--line-strong);
+      background: rgba(255, 248, 239, .96);
+    }
+
+    .calendarEventTime {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 3px;
+      font-weight: 700;
+    }
+
+    .calendarEventTitle {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--ink-strong);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .calendarEventMeta {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .calendarEmptyMini {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 8px 0;
+    }
+
     .planRangeNote {
       margin-top: 8px;
       padding: 9px 10px;
@@ -954,8 +1137,12 @@
       .expense-main > div:last-child { text-align: left !important; }
       .tripCardOpen { grid-template-columns: 42px minmax(0, 1fr) auto; padding: 13px; }
       .tripCardIcon { width: 42px; height: 42px; }
-      .tripCardActions { gap: 6px; padding: 8px; }
-      .tripActionBtn { padding: 8px 6px; font-size: 11px; }
+      .tripCardActions { gap: 5px; padding: 7px; }
+      .tripActionBtn { min-height: 30px; padding: 6px 5px; font-size: 10px; }
+      .planViewSwitch { gap: 5px; padding: 5px; }
+      .planViewBtn { min-height: 31px; padding: 6px 10px; font-size: 11px; }
+      .calendarWeek { min-width: 910px; grid-template-columns: repeat(7, minmax(130px, 1fr)); gap: 8px; }
+      .calendarDay { min-height: 150px; padding: 10px; border-radius: 16px; }
     }
 
     @media (min-width: 760px) {
@@ -979,11 +1166,12 @@
     <section class="launcherHero">
       <div class="launcherMark">
         <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M10 21h4M12 17v4M6 17h12l-1.4-8.4A2 2 0 0 0 14.63 7H9.37A2 2 0 0 0 7.4 8.6L6 17Z"/>
-          <path d="M9 7V5a3 3 0 0 1 6 0v2"/>
+          <path d="M2 13.5 22 12l-8.2 4.4L12 22l-2.3-5.1L2 13.5Z"/>
+          <path d="m9.7 16.9 4.1-16.4 2.2 2.2-2 8.8"/>
+          <path d="M2 13.5 5.7 10l3.3.7"/>
         </svg>
       </div>
-      <h1>Trip Split</h1>
+      <h1>Trip Planner</h1>
       <p>Pick up where you left off, open a shared trip, or start a new one for your next adventure.</p>
     </section>
 
@@ -1002,7 +1190,7 @@
       <div class="launcherSectionHeader">
         <div class="cardTitle" style="margin:0">
           <span class="sectionIcon">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M5 7l1 13h12l1-13M9 11v5M15 11v5M8 7l1-3h6l1 3"/></svg>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13.5 22 12l-8.2 4.4L12 22l-2.3-5.1L2 13.5Z"/><path d="m9.7 16.9 4.1-16.4 2.2 2.2-2 8.8"/><path d="M2 13.5 5.7 10l3.3.7"/></svg>
           </span>
           <div>
             <h2>Your trips</h2>
@@ -1026,7 +1214,7 @@
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
             </button>
             <div class="headerCopy">
-              <h1 id="tripTitle">Trip Expense</h1>
+              <h1 id="tripTitle">Trip Planner</h1>
               <div id="status" class="status">Starting…</div>
             </div>
           </div>
@@ -1112,6 +1300,10 @@
           </div>
           <div id="planRangeNote"></div>
           <div id="planDateStrip" class="dateStrip" style="margin-top:12px"></div>
+          <div class="planViewSwitch" aria-label="Plan view switch">
+            <button id="planItineraryBtn" class="planViewBtn active">🗓️ Planner</button>
+            <button id="planCalendarBtn" class="planViewBtn">📆 Calendar</button>
+          </div>
         </div>
 
         <div class="card">
@@ -1136,9 +1328,10 @@
             <span class="sectionIcon sage">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M5 12h14M5 20h14"/><circle cx="8" cy="4" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="16" cy="20" r="1"/></svg>
             </span>
-            <h2>Day-by-Day Itinerary</h2>
+            <h2 id="planMainTitle">Day-by-Day Itinerary</h2>
           </div>
           <div id="itineraryList"></div>
+          <div id="calendarView" class="hidden"></div>
         </div>
       </section>
 
@@ -1418,9 +1611,30 @@
         <div><label>Default expense currency</label><select id="newTripDefault"></select></div>
       </div>
 
-      <div class="grid">
-        <div><label>Trip start date</label><input id="newTripStartDate" type="date" /></div>
-        <div><label>Trip end date</label><input id="newTripEndDate" type="date" /></div>
+      <div class="newTripDatePanel">
+        <div class="cardTitle" style="margin-bottom:6px">
+          <span class="sectionIcon peach">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/>
+              <path d="M8 13h3M13 13h3M8 17h3"/>
+            </svg>
+          </span>
+          <div>
+            <h3 style="margin:0">Trip dates</h3>
+            <div class="hint">These dates build every day in your Planner and Calendar automatically.</div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label>Start date <span class="requiredMark">*</span></label>
+            <input id="newTripStartDate" type="date" required />
+          </div>
+          <div>
+            <label>End date <span class="requiredMark">*</span></label>
+            <input id="newTripEndDate" type="date" required />
+          </div>
+        </div>
       </div>
 
       <label>People</label>
@@ -1474,10 +1688,11 @@
     let unsubscribeTripList = null;
     let launcherTrips = [];
     let selectedPlanDate = 'all';
+    let selectedPlanView = 'itinerary';
     let editingEventId = null;
 
     let state = {
-      tripName: 'Trip Expense',
+      tripName: 'New trip',
       people: ['Jess', 'Amy', 'Matt'],
       baseCurrency: 'HKD',
       defaultCurrency: 'THB',
@@ -1733,7 +1948,7 @@
       if (!trips.length) {
         $('tripList').innerHTML = `
           <div class="launcherMessage">
-            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13.5 22 12l-8.2 4.4L12 22l-2.3-5.1L2 13.5Z"/><path d="m9.7 16.9 4.1-16.4 2.2 2.2-2 8.8"/><path d="M2 13.5 5.7 10l3.3.7"/></svg>
             <div style="margin-top:8px;font-weight:800;color:var(--ink)">No trips yet</div>
             <div class="meta" style="margin-top:4px">Create your first trip to get started.</div>
           </div>`;
@@ -1759,11 +1974,14 @@
           <article class="tripCard" data-card-trip-id="${esc(trip.id)}">
             <button class="tripCardOpen" data-open-trip-id="${esc(trip.id)}" aria-label="Open ${esc(trip.tripName || 'Untitled trip')}">
               <span class="tripCardIcon">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 21h4M12 17v4M6 17h12l-1.4-8.4A2 2 0 0 0 14.63 7H9.37A2 2 0 0 0 7.4 8.6L6 17Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13.5 22 12l-8.2 4.4L12 22l-2.3-5.1L2 13.5Z"/><path d="m9.7 16.9 4.1-16.4 2.2 2.2-2 8.8"/><path d="M2 13.5 5.7 10l3.3.7"/></svg>
               </span>
               <span style="min-width:0">
                 <span class="tripCardName">${esc(trip.tripName || 'Untitled trip')}</span>
                 <span class="tripCardMeta">${people} ${people === 1 ? 'person' : 'people'} · ${esc(base)} · ${esc(updated)}</span>
+                ${(trip.tripStartDate && trip.tripEndDate)
+                  ? `<span class="tripCardMeta">📅 ${esc(formatDateShort(trip.tripStartDate))} → ${esc(formatDateShort(trip.tripEndDate))}</span>`
+                  : ''}
                 <span class="tripStatusRow">${statusBadge}</span>
               </span>
               <span class="tripArrow">
@@ -1889,11 +2107,23 @@
       }
     }
 
+    function syncNewTripDateLimits() {
+      const startInput = $('newTripStartDate');
+      const endInput = $('newTripEndDate');
+      if (!startInput || !endInput) return;
+
+      endInput.min = startInput.value || '';
+      if (startInput.value && (!endInput.value || endInput.value < startInput.value)) {
+        endInput.value = startInput.value;
+      }
+    }
+
     function openNewTripModal() {
       $('newTripName').value = '';
       $('newTripPeople').value = 'Jessica';
       $('newTripStartDate').value = '';
       $('newTripEndDate').value = '';
+      $('newTripEndDate').min = '';
       fillNewTripCurrencySelects();
       $('newTripWrap').classList.add('show');
       setTimeout(() => $('newTripName').focus(), 50);
@@ -1921,8 +2151,10 @@
       const tripEndDate = $('newTripEndDate').value || '';
 
       if (!name) return toast('Enter a trip name');
+      if (!tripStartDate) return toast('Choose a trip start date');
+      if (!tripEndDate) return toast('Choose a trip end date');
+      if (tripEndDate < tripStartDate) return toast('Trip end date must be on or after the start date');
       if (!people.length) return toast('Add at least one person');
-      if (tripStartDate && tripEndDate && tripEndDate < tripStartDate) return toast('Trip end date must be after the start date');
 
       button.disabled = true;
       button.textContent = 'Creating…';
@@ -2076,6 +2308,130 @@
       });
     }
 
+
+    function startOfWeek(date) {
+      const d = new Date(date);
+      d.setHours(12, 0, 0, 0);
+      d.setDate(d.getDate() - d.getDay());
+      return d;
+    }
+
+    function endOfWeek(date) {
+      const d = startOfWeek(date);
+      d.setDate(d.getDate() + 6);
+      return d;
+    }
+
+    function eventCardMini(event) {
+      const timeText = event.startTime ? formatTime(event.startTime) : 'Any time';
+      const linkedCount = expenseLinksForEvent(event.id).length;
+      const metaBits = [];
+      if (event.location) metaBits.push(`📍 ${esc(event.location)}`);
+      if (linkedCount) metaBits.push(`🧾 ${linkedCount}`);
+      return `
+        <button class="calendarEvent" data-edit-calendar-event="${esc(event.id)}">
+          <div class="calendarEventTime">${esc(timeText)}</div>
+          <div class="calendarEventTitle">${esc(eventEmoji(event.type))} ${esc(event.title || 'Untitled event')}</div>
+          ${metaBits.length ? `<div class="calendarEventMeta">${metaBits.join(' · ')}</div>` : ''}
+        </button>`;
+    }
+
+    function renderCalendarView() {
+      if (!$('calendarView')) return;
+
+      let dates = tripDates();
+      const sorted = sortedEvents();
+      if (!dates.length) dates = [...new Set(sorted.map(event => event.date).filter(Boolean))].sort();
+
+      if (!dates.length) {
+        $('calendarView').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">📆</div><b>No calendar dates yet</b><div class="hint" style="margin-top:5px">Set the trip dates or add your first event to start building the calendar.</div></div>`;
+        return;
+      }
+
+      let start = parseLocalDate(dates[0]);
+      let end = parseLocalDate(dates[dates.length - 1]);
+      if (!start || !end) {
+        $('calendarView').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">📆</div><b>Calendar view is not ready yet</b><div class="hint" style="margin-top:5px">Please add valid trip dates or event dates.</div></div>`;
+        return;
+      }
+
+      if (selectedPlanDate !== 'all') {
+        const selected = parseLocalDate(selectedPlanDate);
+        if (selected) {
+          start = startOfWeek(selected);
+          end = endOfWeek(selected);
+        }
+      } else {
+        start = startOfWeek(start);
+        end = endOfWeek(end);
+      }
+
+      const dateSet = new Set(tripDates());
+      sorted.forEach(event => { if (event.date) dateSet.add(event.date); });
+
+      const byDate = new Map();
+      sorted.forEach(event => {
+        if (!byDate.has(event.date)) byDate.set(event.date, []);
+        byDate.get(event.date).push(event);
+      });
+
+      const weeks = [];
+      let cursor = new Date(start);
+      while (cursor <= end) {
+        const weekDates = [];
+        for (let i = 0; i < 7; i += 1) {
+          weekDates.push(new Date(cursor));
+          cursor.setDate(cursor.getDate() + 1);
+        }
+        weeks.push(weekDates);
+      }
+
+      $('calendarView').innerHTML = `
+        <div class="calendarWrap">
+          ${weeks.map(week => `
+            <div class="calendarWeek">
+              ${week.map(day => {
+                const key = dateKey(day);
+                const events = byDate.get(key) || [];
+                const inRange = dateSet.has(key);
+                const selected = selectedPlanDate === key;
+                return `
+                  <div class="calendarDay ${inRange ? '' : 'outOfRange'} ${selected ? 'selected' : ''}">
+                    <div class="calendarDayHeader">
+                      <div>
+                        <div class="calendarDow">${esc(day.toLocaleDateString(undefined, { weekday: 'short' }))}</div>
+                        <div class="calendarDate">${day.getDate()}</div>
+                        <div class="calendarMonthMini">${esc(day.toLocaleDateString(undefined, { month: 'short' }))}</div>
+                      </div>
+                      <div class="calendarCount">${events.length} ${events.length === 1 ? 'item' : 'items'}</div>
+                    </div>
+                    <div class="calendarEvents">
+                      ${events.length ? events.map(event => eventCardMini(event)).join('') : `<div class="calendarEmptyMini">${inRange ? 'No plans yet' : 'Outside trip range'}</div>`}
+                    </div>
+                  </div>`;
+              }).join('')}
+            </div>`).join('')}
+        </div>`;
+
+      [...$('calendarView').querySelectorAll('[data-edit-calendar-event]')].forEach(button => {
+        button.onclick = () => openEventModal(button.dataset.editCalendarEvent);
+      });
+    }
+
+    function renderPlanView() {
+      const itineraryBtn = $('planItineraryBtn');
+      const calendarBtn = $('planCalendarBtn');
+      const itineraryBox = $('itineraryList');
+      const calendarBox = $('calendarView');
+      const title = $('planMainTitle');
+
+      if (itineraryBtn) itineraryBtn.classList.toggle('active', selectedPlanView === 'itinerary');
+      if (calendarBtn) calendarBtn.classList.toggle('active', selectedPlanView === 'calendar');
+      if (itineraryBox) itineraryBox.classList.toggle('hidden', selectedPlanView !== 'itinerary');
+      if (calendarBox) calendarBox.classList.toggle('hidden', selectedPlanView !== 'calendar');
+      if (title) title.textContent = selectedPlanView === 'calendar' ? 'Calendar View' : 'Day-by-Day Itinerary';
+    }
+
     function expenseLinksForEvent(eventId) {
       return state.expenses.filter(expense => expense.eventId === eventId);
     }
@@ -2184,6 +2540,8 @@
       renderPlanDateStrip();
       renderMealCoverage();
       renderItinerary();
+      renderCalendarView();
+      renderPlanView();
       renderDashboardPlan();
     }
 
@@ -2741,6 +3099,8 @@
       $('search').oninput = render;
       $('closeEdit').onclick = () => $('editWrap').classList.remove('show');
       $('addEventBtn').onclick = () => openEventModal();
+      $('planItineraryBtn').onclick = () => { selectedPlanView = 'itinerary'; renderPlan(); };
+      $('planCalendarBtn').onclick = () => { selectedPlanView = 'calendar'; renderPlan(); };
       $('closeEvent').onclick = closeEventModal;
       $('cancelEvent').onclick = closeEventModal;
       $('saveEventBtn').onclick = saveEvent;
@@ -2756,7 +3116,7 @@
       };
 
       $('saveTrip').onclick = async () => {
-        state.tripName = $('tripNameInput').value.trim() || 'Trip Expense';
+        state.tripName = $('tripNameInput').value.trim() || 'New trip';
         state.baseCurrency = $('baseCurrency').value;
         state.defaultCurrency = $('defaultCurrency').value;
         state.tripStartDate = $('tripStartDate').value || '';
@@ -2797,6 +3157,15 @@
       $('newTripLauncherBtn').onclick = openNewTripModal;
       $('closeNewTrip').onclick = closeNewTripModal;
       $('cancelNewTrip').onclick = closeNewTripModal;
+      $('newTripStartDate').onchange = syncNewTripDateLimits;
+      $('newTripEndDate').onchange = () => {
+        const start = $('newTripStartDate').value;
+        const end = $('newTripEndDate').value;
+        if (start && end && end < start) {
+          $('newTripEndDate').value = start;
+          toast('End date adjusted to match the trip start date');
+        }
+      };
       $('createTripBtn').onclick = createNewTrip;
 
       $('openSharedTripBtn').onclick = () => {
