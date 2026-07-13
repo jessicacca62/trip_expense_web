@@ -926,6 +926,60 @@
       margin-top: 10px;
     }
 
+    .emailInvitePanel {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(243,223,207,.50), rgba(255,250,243,.86));
+    }
+
+    .emailInviteRow {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .pendingEmailList {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .pendingEmailItem {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,253,248,.86);
+    }
+
+    .pendingEmailText {
+      flex: 1;
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--ink-strong);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pendingEmailBadge {
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: var(--rose-soft);
+      color: #8d5f63;
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
     .memberList {
       display: flex;
       flex-direction: column;
@@ -2198,6 +2252,24 @@
             <button id="revokeInviteBtn" class="small danger">Revoke link</button>
           </div>
         </div>
+
+        <div class="emailInvitePanel">
+          <div class="inviteHeroTitle">✉️ Invite by Google email</div>
+          <div class="hint" style="margin-top:5px">
+            Add a friend's Google email here. Send them the normal trip link; when they sign in with that exact Google account, they will join automatically.
+          </div>
+
+          <div class="emailInviteRow">
+            <input id="manualInviteEmail" type="email" placeholder="friend@gmail.com" autocomplete="email" />
+            <button id="addManualInviteBtn" class="small secondary">Add</button>
+          </div>
+
+          <div class="inviteActions">
+            <button id="copyDirectTripLinkBtn" class="small ghost">Copy normal trip link</button>
+          </div>
+
+          <div id="pendingEmailInvites" class="pendingEmailList"></div>
+        </div>
       </div>
 
       <div id="memberInviteNotice" class="inviteHero hidden">
@@ -2259,7 +2331,7 @@
     // Optional UI-only convenience:
     // Put your own Google email here after you publish admin-only delete rules.
     // Leave blank to keep the Delete button visible to all approved users.
-    const ADMIN_EMAIL = 'jessica.szenga@gmail.com';
+    const ADMIN_EMAIL = '';
 
     let unsubscribeTrip = null;
     let unsubscribeExpenses = null;
@@ -2918,11 +2990,12 @@
         launcherStatus(`Deleting ${name}…`);
 
         const ref = db.collection('trips').doc(id);
-        const [expensesSnapshot, eventsSnapshot, membersSnapshot, invitesSnapshot] = await Promise.all([
+        const [expensesSnapshot, eventsSnapshot, membersSnapshot, invitesSnapshot, emailInvitesSnapshot] = await Promise.all([
           ref.collection('expenses').get(),
           ref.collection('events').get(),
           ref.collection('members').get(),
-          ref.collection('invites').get()
+          ref.collection('invites').get(),
+          ref.collection('emailInvites').get()
         ]);
 
         // Firestore does not automatically delete subcollections when a parent document is deleted.
@@ -2931,7 +3004,8 @@
           ...expensesSnapshot.docs,
           ...eventsSnapshot.docs,
           ...membersSnapshot.docs,
-          ...invitesSnapshot.docs
+          ...invitesSnapshot.docs,
+          ...emailInvitesSnapshot.docs
         ];
         const batchSize = 400;
 
@@ -3050,6 +3124,21 @@
 
         await ref.collection('members').doc(currentUser.uid).set(currentUserProfile(), { merge: true });
 
+        const inviteTokenForNewTrip = secureToken();
+        await ref.collection('invites').doc(inviteTokenForNewTrip).set({
+          tripId: id,
+          active: true,
+          createdByUid: currentUser.uid,
+          createdByEmail: currentUser.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        sessionStorage.setItem(
+          'tripPlannerOpenInviteAfterCreate',
+          JSON.stringify({ tripId: id, token: inviteTokenForNewTrip })
+        );
+
         goToTrip(id);
 
       } catch (error) {
@@ -3098,6 +3187,137 @@
     }
 
 
+
+
+    function normalizeEmail(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function isValidEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
+    async function addManualEmailInvite() {
+      if (!isTripOwner()) return toast('Only the trip owner can add email invitations');
+
+      const input = $('manualInviteEmail');
+      const email = normalizeEmail(input.value);
+
+      if (!isValidEmail(email)) return toast('Enter a valid Google email address');
+      if (email === normalizeEmail(currentUser?.email)) return toast('You are already the trip owner');
+
+      const button = $('addManualInviteBtn');
+      button.disabled = true;
+      button.textContent = 'Adding…';
+
+      try {
+        await tripRef.collection('emailInvites').doc(email).set({
+          tripId,
+          email,
+          active: true,
+          createdByUid: currentUser.uid,
+          createdByEmail: currentUser.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        input.value = '';
+        toast(`${email} can now join this trip`);
+        await loadManualEmailInvites();
+
+      } catch (error) {
+        toast(`Could not add email invitation: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Add';
+      }
+    }
+
+    async function loadManualEmailInvites() {
+      const box = $('pendingEmailInvites');
+      if (!box || !tripRef || !isTripOwner()) return;
+
+      box.innerHTML = '';
+
+      try {
+        const snapshot = await tripRef.collection('emailInvites')
+          .where('active', '==', true)
+          .get();
+
+        if (snapshot.empty) {
+          box.innerHTML = '<div class="hint">No pending email invitations.</div>';
+          return;
+        }
+
+        const invites = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
+
+        box.innerHTML = invites.map(invite => `
+          <div class="pendingEmailItem">
+            <span class="pendingEmailText">✉️ ${esc(invite.email || invite.id)}</span>
+            <span class="pendingEmailBadge">Pre-approved</span>
+            <button class="small danger" data-remove-email-invite="${esc(invite.id)}">Remove</button>
+          </div>
+        `).join('');
+
+        [...box.querySelectorAll('[data-remove-email-invite]')].forEach(button => {
+          button.onclick = () => removeManualEmailInvite(button.dataset.removeEmailInvite);
+        });
+
+      } catch (error) {
+        box.innerHTML = `<div class="hint">Could not load email invitations: ${esc(error.message)}</div>`;
+      }
+    }
+
+    async function removeManualEmailInvite(email) {
+      if (!isTripOwner()) return;
+      if (!confirm(`Remove invitation for ${email}?`)) return;
+
+      try {
+        await tripRef.collection('emailInvites').doc(email).delete();
+        toast('Email invitation removed');
+        await loadManualEmailInvites();
+      } catch (error) {
+        toast(`Could not remove invitation: ${error.message}`);
+      }
+    }
+
+    async function copyDirectTripLink() {
+      const value = tripUrl(tripId);
+      try {
+        await navigator.clipboard.writeText(value);
+        toast('Trip link copied');
+      } catch {
+        prompt('Copy trip link', value);
+      }
+    }
+
+    async function joinTripFromEmailInvite(initialTripData) {
+      const email = normalizeEmail(currentUser?.email);
+      if (!email || !currentUser?.uid) return false;
+
+      const memberUids = Array.isArray(initialTripData?.memberUids)
+        ? initialTripData.memberUids
+        : [];
+
+      if (memberUids.includes(currentUser.uid)) return true;
+
+      try {
+        await tripRef.update({
+          memberUids: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        await tripRef.collection('members').doc(currentUser.uid).set(currentUserProfile(), { merge: true });
+        toast('You joined the trip through your email invitation');
+        return true;
+
+      } catch (error) {
+        if (isPermissionDenied(error)) return false;
+        throw error;
+      }
+    }
 
     async function claimCurrentTripAsOwner() {
       if (!tripId || !currentUser?.uid) return;
@@ -3150,6 +3370,7 @@
         } else if (isTripOwner(trip)) {
           $('inviteOwnerControls').classList.remove('hidden');
           await loadActiveInvite();
+          await loadManualEmailInvites();
         } else {
           $('memberInviteNotice').classList.remove('hidden');
         }
@@ -4264,6 +4485,11 @@
       $('createInviteBtn').onclick = createInviteLink;
       $('copyInviteBtn').onclick = copyInviteLink;
       $('revokeInviteBtn').onclick = revokeInviteLink;
+      $('addManualInviteBtn').onclick = addManualEmailInvite;
+      $('manualInviteEmail').onkeydown = event => {
+        if (event.key === 'Enter') addManualEmailInvite();
+      };
+      $('copyDirectTripLinkBtn').onclick = copyDirectTripLink;
       $('inviteJoinHomeBtn').onclick = goHome;
 
       document.querySelectorAll('.tab').forEach(tab => {
@@ -4387,6 +4613,20 @@
           return;
         }
 
+        const initialTripData = initialSnapshot.data() || {};
+        const alreadyMember = Array.isArray(initialTripData.memberUids)
+          && initialTripData.memberUids.includes(currentUser.uid);
+
+        if (!alreadyMember) {
+          const joinedByEmail = await joinTripFromEmailInvite(initialTripData);
+          if (!joinedByEmail) {
+            throw Object.assign(
+              new Error('You are not a member of this trip and no matching email invitation was found.'),
+              { code: 'permission-denied' }
+            );
+          }
+        }
+
         status('Connected · shared editing on');
 
         unsubscribeTrip = tripRef.onSnapshot(doc => {
@@ -4423,6 +4663,22 @@
           state.events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           render();
         }, error => status('Itinerary error: ' + error.message));
+
+        try {
+          const pendingRaw = sessionStorage.getItem('tripPlannerOpenInviteAfterCreate');
+          if (pendingRaw) {
+            const pending = JSON.parse(pendingRaw);
+            if (pending.tripId === tripId) {
+              sessionStorage.removeItem('tripPlannerOpenInviteAfterCreate');
+              setTimeout(async () => {
+                await openInviteModal();
+                toast('Trip created — invitation link is ready to share');
+              }, 350);
+            }
+          }
+        } catch {
+          // Ignore malformed sessionStorage data.
+        }
       } catch (error) {
         if (isPermissionDenied(error)) {
           status('Access denied');
@@ -4434,7 +4690,7 @@
                 <div class="accessDeniedPanel">
                   <b>🔒 This Google account cannot access this trip.</b>
                   <div style="margin-top:7px">Signed in as ${esc(currentUser?.email || 'unknown account')}.</div>
-                  <div class="meta" style="margin-top:7px">Ask the trip owner for an invitation link, then sign in with Google and open that link.</div>
+                  <div class="meta" style="margin-top:7px">Ask the trip owner for an invitation link, or ask them to pre-approve your Google email and send you the normal trip link.</div>
                   <button class="secondary" onclick="goHome()" style="margin-top:12px">← Back to My Trips</button>
                 </div>
               </div>`;
