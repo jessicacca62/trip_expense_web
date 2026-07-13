@@ -1052,6 +1052,139 @@
       font-weight: 750;
     }
 
+    .accommodationPanelHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .accommodationList {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      margin-top: 12px;
+    }
+
+    .accommodationCard {
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      background: linear-gradient(180deg, rgba(255,253,248,.96), rgba(247,238,228,.82));
+      padding: 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .accommodationTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .accommodationIdentity {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .accommodationEmoji {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      background: var(--teal-soft);
+      font-size: 21px;
+    }
+
+    .accommodationName {
+      color: var(--ink-strong);
+      font-size: 15px;
+      line-height: 1.35;
+      font-weight: 950;
+    }
+
+    .accommodationDates {
+      margin-top: 4px;
+      color: var(--teal-deep);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 900;
+    }
+
+    .accommodationMeta {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .accommodationBadges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 9px;
+    }
+
+    .accommodationActions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-top: 11px;
+    }
+
+    .accommodationSummary {
+      margin-top: 10px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(220,232,227,.34);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .accommodationNightBadge {
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+    }
+
+    .accommodationExpenseBadge {
+      background: var(--gold-soft);
+      color: #806c47;
+    }
+
+    .accommodationPickerHint {
+      margin-bottom: 7px;
+    }
+
+    .timelineEvent.accommodationEvent {
+      background: linear-gradient(180deg, rgba(238,246,242,.96), rgba(255,250,242,.95));
+      border-color: #c9dad4;
+    }
+
+    .timelineEvent.accommodationEvent .timelineDot {
+      background: #76958d;
+    }
+
+    .calendarEvent.accommodationCalendarEvent {
+      background: linear-gradient(135deg, rgba(220,232,227,.9), rgba(244,231,223,.82));
+      color: var(--ink-strong);
+      border: 1px solid #c5d8d1;
+    }
+
+    @media (max-width: 640px) {
+      .accommodationActions > * {
+        flex: 1 1 calc(50% - 5px);
+      }
+    }
+
     .roleBadge {
       display: inline-flex;
       align-items: center;
@@ -1461,9 +1594,10 @@
     }
 
     .planViewBtn.active {
-      color: #fff;
-      background: linear-gradient(135deg, var(--teal), var(--mauve));
-      box-shadow: 0 8px 18px rgba(105, 126, 149, .16);
+      color: var(--ink-strong);
+      background: linear-gradient(135deg, var(--teal-soft), var(--rose-soft));
+      border: 1px solid #c5d8d1;
+      box-shadow: 0 8px 18px rgba(105, 126, 149, .12);
     }
 
     .calendarWrap {
@@ -1840,7 +1974,7 @@
                 </span>
                 <h2>Trip Plan</h2>
               </div>
-              <div class="hint">Plan each stop, track restaurant bookings, open maps, and connect events to expenses.</div>
+              <div class="hint">Plan each stop, track restaurant bookings, manage accommodation, open maps, and connect plans to expenses.</div>
             </div>
             <button id="addEventBtn" class="iconText">
               <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -1853,6 +1987,43 @@
             <button id="planItineraryBtn" class="planViewBtn active">🗓️ Planner</button>
             <button id="planCalendarBtn" class="planViewBtn">📆 Calendar</button>
           </div>
+        </div>
+
+        <!-- Itinerary / Calendar now appears immediately after Trip Plan. -->
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon sage">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M5 12h14M5 20h14"/><circle cx="8" cy="4" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="16" cy="20" r="1"/></svg>
+            </span>
+            <h2 id="planMainTitle">Day-by-Day Itinerary</h2>
+          </div>
+          <div id="itineraryList"></div>
+          <div id="calendarView" class="hidden"></div>
+        </div>
+
+        <!-- Accommodation is a first-class trip object and feeds Planner/Calendar automatically. -->
+        <div class="card">
+          <div class="accommodationPanelHeader">
+            <div>
+              <div class="cardTitle" style="margin-bottom:3px">
+                <span class="sectionIcon sage">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 20V9l8-5 8 5v11"/>
+                    <path d="M2 20h20M8 20v-6h8v6"/>
+                    <path d="M8 10h.01M12 10h.01M16 10h.01"/>
+                  </svg>
+                </span>
+                <h2>Accommodation</h2>
+              </div>
+              <div class="hint">Add different hotels or stays for different nights. Each occupied night appears automatically in the itinerary and calendar.</div>
+            </div>
+            <button id="addAccommodationBtn" class="secondary iconText">
+              <span>🏨</span>
+              Add Accommodation
+            </button>
+          </div>
+          <div id="accommodationSummary"></div>
+          <div id="accommodationList" class="accommodationList"></div>
         </div>
 
         <div class="card">
@@ -1870,17 +2041,6 @@
             <span>○ Open slot</span>
           </div>
           <div id="mealCoverage"></div>
-        </div>
-
-        <div class="card">
-          <div class="cardTitle">
-            <span class="sectionIcon sage">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M5 12h14M5 20h14"/><circle cx="8" cy="4" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="16" cy="20" r="1"/></svg>
-            </span>
-            <h2 id="planMainTitle">Day-by-Day Itinerary</h2>
-          </div>
-          <div id="itineraryList"></div>
-          <div id="calendarView" class="hidden"></div>
         </div>
       </section>
 
@@ -2118,6 +2278,92 @@
         <button id="saveEventBtn" class="iconText">
           <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
           Save Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / edit accommodation modal. -->
+  <div id="accommodationWrap" class="modalWrap">
+    <div class="modal">
+      <div class="top">
+        <div class="cardTitle" style="margin:0">
+          <span class="sectionIcon sage">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 20V9l8-5 8 5v11"/>
+              <path d="M2 20h20M8 20v-6h8v6"/>
+              <path d="M8 10h.01M12 10h.01M16 10h.01"/>
+            </svg>
+          </span>
+          <h2 id="accommodationModalTitle">Add Accommodation</h2>
+        </div>
+        <button id="closeAccommodation" class="small ghost">Close</button>
+      </div>
+
+      <label>Accommodation name</label>
+      <input id="accommodationNameInput" placeholder="e.g. Rosewood Bangkok" />
+
+      <div class="grid">
+        <div>
+          <label>Check-in date</label>
+          <input id="accommodationCheckInDateInput" type="date" />
+        </div>
+        <div>
+          <label>Check-out date</label>
+          <input id="accommodationCheckOutDateInput" type="date" />
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Check-in time <span class="hint">(optional)</span></label>
+          <input id="accommodationCheckInTimeInput" type="time" />
+        </div>
+        <div>
+          <label>Check-out time <span class="hint">(optional)</span></label>
+          <input id="accommodationCheckOutTimeInput" type="time" />
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Booking status</label>
+          <select id="accommodationBookingStatusInput">
+            <option value="Planned">🟡 Planned</option>
+            <option value="Reserved">✅ Reserved</option>
+            <option value="Waitlist">⏳ Waitlist</option>
+            <option value="Not required">☕ No booking needed</option>
+          </select>
+        </div>
+        <div>
+          <label>Confirmation number</label>
+          <input id="accommodationConfirmationInput" placeholder="ABC123" />
+        </div>
+      </div>
+
+      <label>Location / address</label>
+      <input id="accommodationLocationInput" placeholder="Hotel, apartment, villa, address…" />
+
+      <label>Google Maps link <span class="hint">(optional — generated from location if blank)</span></label>
+      <input id="accommodationMapUrlInput" type="url" placeholder="https://maps.google.com/…" />
+
+      <label>Booking URL <span class="hint">(optional)</span></label>
+      <input id="accommodationBookingUrlInput" type="url" placeholder="https://…" />
+
+      <label>Notes</label>
+      <textarea id="accommodationNotesInput" placeholder="Breakfast included · late check-in requested · room type…"></textarea>
+
+      <div class="box">
+        <div class="accommodationPickerHint hint"><b>🧾 Link existing accommodation expenses — optional</b></div>
+        <div class="hint">Link room charges, deposits, resort fees, or any other hotel-related expenses.</div>
+        <div id="accommodationExpenseLinks" class="expenseLinkPicker"></div>
+      </div>
+
+      <div class="modalActions">
+        <button id="cancelAccommodation" class="ghost">Cancel</button>
+        <button id="saveAccommodationBtn" class="iconText">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          Save Accommodation
         </button>
       </div>
     </div>
@@ -2366,6 +2612,7 @@
     let unsubscribeTrip = null;
     let unsubscribeExpenses = null;
     let unsubscribeEvents = null;
+    let unsubscribeAccommodations = null;
     let unsubscribeTripList = null;
     let launcherTrips = [];
     let legacyTrips = [];
@@ -2373,6 +2620,7 @@
     let selectedPlanDate = 'all';
     let selectedPlanView = 'itinerary';
     let editingEventId = null;
+    let editingAccommodationId = null;
 
     let state = {
       tripName: 'New trip',
@@ -2401,7 +2649,8 @@
         CHF: 8.8
       },
       expenses: [],
-      events: []
+      events: [],
+      accommodations: []
     };
 
     const $ = id => document.getElementById(id);
@@ -2471,8 +2720,10 @@
       let end = parseLocalDate(state.tripEndDate);
 
       if (!start || !end || end < start) {
-        const eventDates = [...new Set((state.events || []).map(event => event.date).filter(Boolean))].sort();
-        return eventDates;
+        const eventDates = (state.events || []).map(event => event.date).filter(Boolean);
+        const accommodationDates = (state.accommodations || [])
+          .flatMap(accommodation => accommodationNightDates(accommodation));
+        return [...new Set([...eventDates, ...accommodationDates])].sort();
       }
 
       // Protect the browser from accidental multi-year ranges while allowing normal long trips.
@@ -3078,7 +3329,7 @@
 
       const name = trip.tripName || 'Untitled trip';
       const confirmed = confirm(
-        `Delete "${name}"?\n\nThis permanently deletes the trip, its expenses, and itinerary events. This cannot be undone.`
+        `Delete "${name}"?\n\nThis permanently deletes the trip, its expenses, itinerary events, accommodations, members, and invitations. This cannot be undone.`
       );
       if (!confirmed) return;
 
@@ -3087,9 +3338,10 @@
         launcherStatus(`Deleting ${name}…`);
 
         const ref = db.collection('trips').doc(id);
-        const [expensesSnapshot, eventsSnapshot, membersSnapshot, invitesSnapshot, emailInvitesSnapshot] = await Promise.all([
+        const [expensesSnapshot, eventsSnapshot, accommodationsSnapshot, membersSnapshot, invitesSnapshot, emailInvitesSnapshot] = await Promise.all([
           ref.collection('expenses').get(),
           ref.collection('events').get(),
+          ref.collection('accommodations').get(),
           ref.collection('members').get(),
           ref.collection('invites').get(),
           ref.collection('emailInvites').get()
@@ -3112,6 +3364,7 @@
         const docs = [
           ...expensesSnapshot.docs,
           ...eventsSnapshot.docs,
+          ...accommodationsSnapshot.docs,
           ...membersSnapshot.docs,
           ...invitesSnapshot.docs,
           ...emailInvitesSnapshot.docs,
@@ -3837,6 +4090,77 @@
       }
     }
 
+
+    function accommodationNightDates(accommodation) {
+      const dates = [];
+      const start = parseLocalDate(accommodation?.checkInDate);
+      const end = parseLocalDate(accommodation?.checkOutDate);
+
+      if (!start || !end || end <= start) return dates;
+
+      const cursor = new Date(start);
+      const limit = 120;
+      while (cursor < end && dates.length < limit) {
+        dates.push(dateKey(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return dates;
+    }
+
+    function accommodationNights(accommodation) {
+      return accommodationNightDates(accommodation).length;
+    }
+
+    function accommodationMapUrl(accommodation) {
+      if (accommodation?.mapUrl && /^https?:\/\//i.test(accommodation.mapUrl)) return accommodation.mapUrl;
+      if (!accommodation?.location) return '';
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodation.location)}`;
+    }
+
+    function expenseLinksForAccommodation(accommodationId) {
+      return state.expenses.filter(expense => expense.accommodationId === accommodationId);
+    }
+
+    function accommodationPlanEvents() {
+      const events = [];
+
+      (state.accommodations || []).forEach(accommodation => {
+        const nightDates = accommodationNightDates(accommodation);
+        const nightCount = nightDates.length;
+
+        nightDates.forEach((date, index) => {
+          events.push({
+            id: `accommodation:${accommodation.id}:${date}`,
+            sourceType: 'accommodation',
+            virtual: true,
+            accommodationId: accommodation.id,
+            accommodationNightIndex: index,
+            accommodationNightCount: nightCount,
+            title: accommodation.name || 'Accommodation',
+            type: 'Hotel',
+            date,
+            startTime: index === 0 ? (accommodation.checkInTime || '') : '',
+            endTime: '',
+            location: accommodation.location || '',
+            mapUrl: accommodation.mapUrl || '',
+            bookingStatus: accommodation.bookingStatus || 'Planned',
+            confirmation: accommodation.confirmation || '',
+            bookingUrl: accommodation.bookingUrl || '',
+            notes: accommodation.notes || ''
+          });
+        });
+      });
+
+      return events;
+    }
+
+    function allPlanEvents() {
+      return sortedEvents([
+        ...(state.events || []),
+        ...accommodationPlanEvents()
+      ]);
+    }
+
     const EVENT_TYPE_EMOJI = {
       'Meal': '🍽️',
       'Flight': '✈️',
@@ -3952,15 +4276,32 @@
     }
 
     function eventCardMini(event) {
-      const timeText = event.startTime ? formatTime(event.startTime) : 'Any time';
-      const linkedCount = expenseLinksForEvent(event.id).length;
+      const isAccommodation = event.sourceType === 'accommodation';
+      const timeText = isAccommodation
+        ? (event.accommodationNightIndex === 0 && event.startTime
+            ? `Check in ${formatTime(event.startTime)}`
+            : 'Overnight stay')
+        : (event.startTime ? formatTime(event.startTime) : 'Any time');
+
+      const linkedCount = isAccommodation
+        ? expenseLinksForAccommodation(event.accommodationId).length
+        : expenseLinksForEvent(event.id).length;
+
       const metaBits = [];
       if (event.location) metaBits.push(`📍 ${esc(event.location)}`);
       if (linkedCount) metaBits.push(`🧾 ${linkedCount}`);
+      if (isAccommodation) {
+        metaBits.push(`Night ${event.accommodationNightIndex + 1}/${event.accommodationNightCount}`);
+      }
+
+      const editAttribute = isAccommodation
+        ? `data-edit-calendar-accommodation="${esc(event.accommodationId)}"`
+        : `data-edit-calendar-event="${esc(event.id)}"`;
+
       return `
-        <button class="calendarEvent" data-edit-calendar-event="${esc(event.id)}">
+        <button class="calendarEvent ${isAccommodation ? 'accommodationCalendarEvent' : ''}" ${editAttribute}>
           <div class="calendarEventTime">${esc(timeText)}</div>
-          <div class="calendarEventTitle">${esc(eventEmoji(event.type))} ${esc(event.title || 'Untitled event')}</div>
+          <div class="calendarEventTitle">${isAccommodation ? '🏨' : esc(eventEmoji(event.type))} ${esc(event.title || 'Untitled event')}</div>
           ${metaBits.length ? `<div class="calendarEventMeta">${metaBits.join(' · ')}</div>` : ''}
         </button>`;
     }
@@ -3971,7 +4312,7 @@
       // tripDates() returns every date from tripStartDate through tripEndDate.
       // If trip dates are unavailable, it falls back to event dates.
       const travelDateKeys = tripDates();
-      const sorted = sortedEvents();
+      const sorted = allPlanEvents();
 
       if (!travelDateKeys.length) {
         $('calendarView').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">📆</div><b>No travel dates yet</b><div class="hint" style="margin-top:5px">Set the trip start and end dates to build the calendar.</div></div>`;
@@ -4043,6 +4384,9 @@
       [...$('calendarView').querySelectorAll('[data-edit-calendar-event]')].forEach(button => {
         button.onclick = () => openEventModal(button.dataset.editCalendarEvent);
       });
+      [...$('calendarView').querySelectorAll('[data-edit-calendar-accommodation]')].forEach(button => {
+        button.onclick = () => openAccommodationModal(button.dataset.editCalendarAccommodation);
+      });
     }
 
     function renderPlanView() {
@@ -4064,31 +4408,62 @@
     }
 
     function eventCard(event, nextEvent) {
-      const linkedExpenses = expenseLinksForEvent(event.id);
+      const isAccommodation = event.sourceType === 'accommodation';
+      const linkedExpenses = isAccommodation
+        ? expenseLinksForAccommodation(event.accommodationId)
+        : expenseLinksForEvent(event.id);
+
       const eventMs = eventDateTime(event);
       const isPast = eventMs && eventMs < Date.now();
       const mapUrl = mapSearchUrl(event);
       const nextDirections = directionsUrl(event, nextEvent);
-      const timeText = event.startTime
-        ? `${formatTime(event.startTime)}${event.endTime ? ` – ${formatTime(event.endTime)}` : ''}`
-        : 'Any time';
+
+      const timeText = isAccommodation
+        ? (
+            event.accommodationNightIndex === 0
+              ? `Check in${event.startTime ? ` ${formatTime(event.startTime)}` : ''} · Overnight`
+              : `Overnight stay · Night ${event.accommodationNightIndex + 1} of ${event.accommodationNightCount}`
+          )
+        : (
+            event.startTime
+              ? `${formatTime(event.startTime)}${event.endTime ? ` – ${formatTime(event.endTime)}` : ''}`
+              : 'Any time'
+          );
 
       const expenseBadge = linkedExpenses.length
         ? `<span class="expenseLinkBadge linked">🧾 ${linkedExpenses.length} expense${linkedExpenses.length === 1 ? '' : 's'} linked</span>`
-        : isPast
-          ? `<span class="expenseLinkBadge missing">⚠️ Past event · no expense linked</span>`
-          : `<span class="expenseLinkBadge future">🧾 No expense linked yet</span>`;
+        : isAccommodation
+          ? `<span class="expenseLinkBadge future">🧾 No accommodation expense linked yet</span>`
+          : isPast
+            ? `<span class="expenseLinkBadge missing">⚠️ Past event · no expense linked</span>`
+            : `<span class="expenseLinkBadge future">🧾 No expense linked yet</span>`;
 
       const linkedExpenseDetail = linkedExpenses.length
         ? `<div class="eventMeta">${linkedExpenses.map(expense => `${esc(expense.description)} · ${esc(expense.currency)} ${money(expense.amount)}`).join('<br>')}</div>`
         : '';
 
+      const editButton = isAccommodation
+        ? `
+          <button class="small ghost iconText" data-edit-accommodation="${esc(event.accommodationId)}">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
+            Edit stay
+          </button>`
+        : `
+          <button class="small ghost iconText" data-edit-event="${esc(event.id)}">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
+            Edit
+          </button>
+          <button class="small danger iconText" data-delete-event="${esc(event.id)}">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>
+            Delete
+          </button>`;
+
       return `
-        <div class="timelineEvent">
+        <div class="timelineEvent ${isAccommodation ? 'accommodationEvent' : ''}">
           <span class="timelineDot"></span>
           <div class="eventTop">
             <div class="eventTitleWrap">
-              <div class="eventEmoji">${esc(eventEmoji(event.type))}</div>
+              <div class="eventEmoji">${isAccommodation ? '🏨' : esc(eventEmoji(event.type))}</div>
               <div style="min-width:0">
                 <div class="eventTitle">${esc(event.title || 'Untitled event')}</div>
                 <div class="eventTime">${esc(timeText)}</div>
@@ -4097,8 +4472,14 @@
           </div>
 
           <div class="eventBadgeRow">
-            <span class="eventTypeBadge" style="background:var(--peach-soft);color:#7b5b49">${esc(eventEmoji(event.type))} ${esc(event.type || 'Other')}</span>
-            ${event.mealSlot ? `<span class="bookingBadge ${bookingClass(event.bookingStatus)}">${esc(bookingLabel(event.bookingStatus))} · ${esc(event.mealSlot)}</span>` : ''}
+            <span class="eventTypeBadge" style="background:${isAccommodation ? 'var(--teal-soft)' : 'var(--peach-soft)'};color:${isAccommodation ? 'var(--teal-deep)' : '#7b5b49'}">
+              ${isAccommodation ? '🏨 Accommodation' : `${esc(eventEmoji(event.type))} ${esc(event.type || 'Other')}`}
+            </span>
+            ${isAccommodation
+              ? `<span class="bookingBadge ${bookingClass(event.bookingStatus)}">${esc(bookingLabel(event.bookingStatus))}</span>`
+              : event.mealSlot
+                ? `<span class="bookingBadge ${bookingClass(event.bookingStatus)}">${esc(bookingLabel(event.bookingStatus))} · ${esc(event.mealSlot)}</span>`
+                : ''}
             ${expenseBadge}
           </div>
 
@@ -4111,20 +4492,13 @@
             ${mapUrl ? `<a href="${esc(mapUrl)}" target="_blank" rel="noopener">📍 Open map</a>` : ''}
             ${nextDirections ? `<a class="directionsLink" href="${esc(nextDirections)}" target="_blank" rel="noopener">🧭 To next stop</a>` : ''}
             ${event.bookingUrl && /^https?:\/\//i.test(event.bookingUrl) ? `<a class="bookingLink" href="${esc(event.bookingUrl)}" target="_blank" rel="noopener">🔖 Booking</a>` : ''}
-            <button class="small ghost iconText" data-edit-event="${esc(event.id)}">
-              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
-              Edit
-            </button>
-            <button class="small danger iconText" data-delete-event="${esc(event.id)}">
-              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>
-              Delete
-            </button>
+            ${editButton}
           </div>
         </div>`;
     }
 
     function renderItinerary() {
-      let events = sortedEvents();
+      let events = allPlanEvents();
       if (selectedPlanDate !== 'all') events = events.filter(event => event.date === selectedPlanDate);
 
       if (!events.length) {
@@ -4156,6 +4530,334 @@
       [...$('itineraryList').querySelectorAll('[data-delete-event]')].forEach(button => {
         button.onclick = () => deleteEvent(button.dataset.deleteEvent);
       });
+      [...$('itineraryList').querySelectorAll('[data-edit-accommodation]')].forEach(button => {
+        button.onclick = () => openAccommodationModal(button.dataset.editAccommodation);
+      });
+    }
+
+
+    function renderAccommodationExpensePicker(accommodationId) {
+      const box = $('accommodationExpenseLinks');
+      if (!box) return;
+
+      if (!state.expenses.length) {
+        box.innerHTML = '<div class="hint">No expenses yet. You can add the accommodation now and link expenses later.</div>';
+        return;
+      }
+
+      box.innerHTML = [...state.expenses]
+        .sort((a, b) => expenseDate(b).localeCompare(expenseDate(a)))
+        .map(expense => `
+          <button
+            type="button"
+            class="chip ${accommodationId && expense.accommodationId === accommodationId ? 'active' : ''}"
+            data-accommodation-expense-id="${esc(expense.id)}">
+            ${esc(expense.description)} · ${esc(expense.currency)} ${money(expense.amount)}
+          </button>`)
+        .join('');
+
+      [...box.querySelectorAll('[data-accommodation-expense-id]')].forEach(button => {
+        button.onclick = () => button.classList.toggle('active');
+      });
+    }
+
+    function openAccommodationModal(id = null) {
+      editingAccommodationId = id;
+      const accommodation = id
+        ? state.accommodations.find(item => item.id === id)
+        : null;
+
+      const defaultCheckIn = selectedPlanDate !== 'all'
+        ? selectedPlanDate
+        : (state.tripStartDate || today());
+
+      let defaultCheckOut = state.tripEndDate || defaultCheckIn;
+      if (!accommodation && defaultCheckOut <= defaultCheckIn) {
+        const next = parseLocalDate(defaultCheckIn);
+        if (next) {
+          next.setDate(next.getDate() + 1);
+          defaultCheckOut = dateKey(next);
+        }
+      }
+
+      $('accommodationModalTitle').textContent = accommodation ? 'Edit Accommodation' : 'Add Accommodation';
+      $('accommodationNameInput').value = accommodation?.name || '';
+      $('accommodationCheckInDateInput').value = accommodation?.checkInDate || defaultCheckIn;
+      $('accommodationCheckOutDateInput').value = accommodation?.checkOutDate || defaultCheckOut;
+      $('accommodationCheckInTimeInput').value = accommodation?.checkInTime || '';
+      $('accommodationCheckOutTimeInput').value = accommodation?.checkOutTime || '';
+      $('accommodationBookingStatusInput').value = accommodation?.bookingStatus || 'Planned';
+      $('accommodationConfirmationInput').value = accommodation?.confirmation || '';
+      $('accommodationLocationInput').value = accommodation?.location || '';
+      $('accommodationMapUrlInput').value = accommodation?.mapUrl || '';
+      $('accommodationBookingUrlInput').value = accommodation?.bookingUrl || '';
+      $('accommodationNotesInput').value = accommodation?.notes || '';
+
+      renderAccommodationExpensePicker(id || '');
+      syncAccommodationDateLimits();
+      $('accommodationWrap').classList.add('show');
+
+      setTimeout(() => $('accommodationNameInput').focus(), 50);
+    }
+
+    function closeAccommodationModal() {
+      editingAccommodationId = null;
+      $('accommodationWrap').classList.remove('show');
+    }
+
+    function syncAccommodationDateLimits() {
+      const checkIn = $('accommodationCheckInDateInput');
+      const checkOut = $('accommodationCheckOutDateInput');
+      if (!checkIn || !checkOut) return;
+
+      checkOut.min = checkIn.value || '';
+
+      if (checkIn.value && (!checkOut.value || checkOut.value <= checkIn.value)) {
+        const next = parseLocalDate(checkIn.value);
+        if (next) {
+          next.setDate(next.getDate() + 1);
+          checkOut.value = dateKey(next);
+        }
+      }
+    }
+
+    async function syncExpenseLinksForAccommodation(accommodationId, selectedExpenseIds) {
+      const selected = new Set(selectedExpenseIds);
+
+      const changed = state.expenses.filter(expense =>
+        (expense.accommodationId === accommodationId && !selected.has(expense.id)) ||
+        (selected.has(expense.id) && expense.accommodationId !== accommodationId)
+      );
+
+      if (!changed.length) return;
+
+      if (tripRef) {
+        const batch = db.batch();
+
+        changed.forEach(expense => {
+          const ref = tripRef.collection('expenses').doc(expense.id);
+
+          if (selected.has(expense.id)) {
+            batch.set(ref, { accommodationId, updatedAt: Date.now() }, { merge: true });
+          } else {
+            batch.set(ref, { accommodationId: '', updatedAt: Date.now() }, { merge: true });
+          }
+        });
+
+        await batch.commit();
+      } else {
+        state.expenses = state.expenses.map(expense => {
+          if (selected.has(expense.id)) return { ...expense, accommodationId };
+          if (expense.accommodationId === accommodationId) return { ...expense, accommodationId: '' };
+          return expense;
+        });
+      }
+    }
+
+    async function saveAccommodation() {
+      const button = $('saveAccommodationBtn');
+      const name = $('accommodationNameInput').value.trim();
+      const checkInDate = $('accommodationCheckInDateInput').value;
+      const checkOutDate = $('accommodationCheckOutDateInput').value;
+
+      if (!name) return toast('Enter an accommodation name');
+      if (!checkInDate) return toast('Choose a check-in date');
+      if (!checkOutDate) return toast('Choose a check-out date');
+      if (checkOutDate <= checkInDate) return toast('Check-out date must be after check-in date');
+
+      const id = editingAccommodationId || uuid();
+      const existing = state.accommodations.find(item => item.id === id);
+
+      const accommodation = {
+        id,
+        name,
+        checkInDate,
+        checkOutDate,
+        checkInTime: $('accommodationCheckInTimeInput').value || '',
+        checkOutTime: $('accommodationCheckOutTimeInput').value || '',
+        bookingStatus: $('accommodationBookingStatusInput').value || 'Planned',
+        confirmation: $('accommodationConfirmationInput').value.trim(),
+        location: $('accommodationLocationInput').value.trim(),
+        mapUrl: $('accommodationMapUrlInput').value.trim(),
+        bookingUrl: $('accommodationBookingUrlInput').value.trim(),
+        notes: $('accommodationNotesInput').value.trim(),
+        createdAt: existing?.createdAt || Date.now(),
+        updatedAt: Date.now()
+      };
+
+      const selectedExpenseIds = [
+        ...$('accommodationExpenseLinks')
+          .querySelectorAll('[data-accommodation-expense-id].active')
+      ].map(item => item.dataset.accommodationExpenseId);
+
+      button.disabled = true;
+
+      try {
+        if (tripRef) {
+          await tripRef.collection('accommodations').doc(id).set(accommodation, { merge: true });
+          await syncExpenseLinksForAccommodation(id, selectedExpenseIds);
+          await saveMeta();
+        } else {
+          const index = state.accommodations.findIndex(item => item.id === id);
+          if (index >= 0) state.accommodations[index] = accommodation;
+          else state.accommodations.push(accommodation);
+
+          await syncExpenseLinksForAccommodation(id, selectedExpenseIds);
+          localStorage.setItem('trip-' + tripId, JSON.stringify(state));
+          render();
+        }
+
+        closeAccommodationModal();
+        toast(existing ? 'Accommodation updated' : 'Accommodation added');
+      } catch (error) {
+        toast(`Could not save accommodation: ${error.message}`);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function deleteAccommodation(id) {
+      const accommodation = state.accommodations.find(item => item.id === id);
+      if (!accommodation) return;
+
+      if (!confirm(
+        `Delete "${accommodation.name}"?\n\nIt will disappear from the Accommodation panel, itinerary, and calendar. Linked expenses will remain but will no longer be linked to this stay.`
+      )) return;
+
+      try {
+        const linked = expenseLinksForAccommodation(id);
+
+        if (tripRef) {
+          if (linked.length) {
+            const batch = db.batch();
+            linked.forEach(expense => {
+              batch.set(
+                tripRef.collection('expenses').doc(expense.id),
+                { accommodationId: '', updatedAt: Date.now() },
+                { merge: true }
+              );
+            });
+            await batch.commit();
+          }
+
+          await tripRef.collection('accommodations').doc(id).delete();
+          await saveMeta();
+        } else {
+          state.accommodations = state.accommodations.filter(item => item.id !== id);
+          state.expenses = state.expenses.map(expense =>
+            expense.accommodationId === id ? { ...expense, accommodationId: '' } : expense
+          );
+          localStorage.setItem('trip-' + tripId, JSON.stringify(state));
+          render();
+        }
+
+        toast('Accommodation deleted');
+      } catch (error) {
+        toast(`Could not delete accommodation: ${error.message}`);
+      }
+    }
+
+    function renderAccommodations() {
+      const list = $('accommodationList');
+      const summary = $('accommodationSummary');
+      if (!list || !summary) return;
+
+      const accommodations = [...(state.accommodations || [])].sort((a, b) =>
+        String(a.checkInDate || '').localeCompare(String(b.checkInDate || '')) ||
+        String(a.name || '').localeCompare(String(b.name || ''))
+      );
+
+      if (!accommodations.length) {
+        summary.innerHTML = '';
+        list.innerHTML = `
+          <div class="planEmpty">
+            <div class="planEmptyEmoji">🏨</div>
+            <b>No accommodation added yet</b>
+            <div class="hint" style="margin-top:5px">Add one or more stays. Each occupied night will automatically appear in Planner and Calendar.</div>
+            <button class="small secondary iconText" data-empty-add-accommodation style="margin-top:12px">
+              <span>🏨</span> Add accommodation
+            </button>
+          </div>`;
+
+        list.querySelector('[data-empty-add-accommodation]').onclick = () => openAccommodationModal();
+        return;
+      }
+
+      const coveredNights = new Set(
+        accommodations.flatMap(accommodation => accommodationNightDates(accommodation))
+      );
+
+      const travelNights = Math.max(tripDates().length - 1, 0);
+
+      summary.innerHTML = `
+        <div class="accommodationSummary">
+          🛏️ ${coveredNights.size} night${coveredNights.size === 1 ? '' : 's'} covered
+          ${travelNights ? ` · ${Math.max(travelNights - coveredNights.size, 0)} night${Math.max(travelNights - coveredNights.size, 0) === 1 ? '' : 's'} not yet assigned` : ''}
+        </div>`;
+
+      list.innerHTML = accommodations.map(accommodation => {
+        const nights = accommodationNights(accommodation);
+        const linkedExpenses = expenseLinksForAccommodation(accommodation.id);
+        const linkedBaseTotal = linkedExpenses.reduce((sum, expense) => sum + baseAmt(expense), 0);
+        const mapUrl = accommodationMapUrl(accommodation);
+
+        return `
+          <div class="accommodationCard">
+            <div class="accommodationTop">
+              <div class="accommodationIdentity">
+                <div class="accommodationEmoji">🏨</div>
+                <div style="min-width:0">
+                  <div class="accommodationName">${esc(accommodation.name || 'Accommodation')}</div>
+                  <div class="accommodationDates">
+                    ${esc(formatDateShort(accommodation.checkInDate))}
+                    → ${esc(formatDateShort(accommodation.checkOutDate))}
+                    · ${nights} night${nights === 1 ? '' : 's'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="accommodationBadges">
+              <span class="bookingBadge ${bookingClass(accommodation.bookingStatus)}">${esc(bookingLabel(accommodation.bookingStatus))}</span>
+              <span class="bookingBadge accommodationNightBadge">🌙 ${nights} night${nights === 1 ? '' : 's'}</span>
+              <span class="bookingBadge accommodationExpenseBadge">
+                🧾 ${linkedExpenses.length} expense${linkedExpenses.length === 1 ? '' : 's'}
+                ${linkedExpenses.length ? ` · ${money(linkedBaseTotal)} ${esc(state.baseCurrency)}` : ''}
+              </span>
+            </div>
+
+            ${accommodation.location ? `<div class="accommodationMeta">📍 ${esc(accommodation.location)}</div>` : ''}
+            ${accommodation.confirmation ? `<div class="accommodationMeta">📋 Confirmation: <b>${esc(accommodation.confirmation)}</b></div>` : ''}
+            ${accommodation.notes ? `<div class="eventNotes">${esc(accommodation.notes)}</div>` : ''}
+
+            ${linkedExpenses.length
+              ? `<div class="accommodationMeta">${linkedExpenses.map(expense => `🧾 ${esc(expense.description)} · ${esc(expense.currency)} ${money(expense.amount)}`).join('<br>')}</div>`
+              : ''}
+
+            <div class="accommodationActions">
+              ${mapUrl ? `<a href="${esc(mapUrl)}" target="_blank" rel="noopener">📍 Open map</a>` : ''}
+              ${accommodation.bookingUrl && /^https?:\/\//i.test(accommodation.bookingUrl)
+                ? `<a class="bookingLink" href="${esc(accommodation.bookingUrl)}" target="_blank" rel="noopener">🔖 Booking</a>`
+                : ''}
+              <button class="small ghost iconText" data-edit-accommodation-card="${esc(accommodation.id)}">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
+                Edit
+              </button>
+              <button class="small danger iconText" data-delete-accommodation-card="${esc(accommodation.id)}">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>
+                Delete
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+      [...list.querySelectorAll('[data-edit-accommodation-card]')].forEach(button => {
+        button.onclick = () => openAccommodationModal(button.dataset.editAccommodationCard);
+      });
+
+      [...list.querySelectorAll('[data-delete-accommodation-card]')].forEach(button => {
+        button.onclick = () => deleteAccommodation(button.dataset.deleteAccommodationCard);
+      });
     }
 
     function renderPlan() {
@@ -4165,6 +4867,7 @@
         ? `<div class="planRangeNote">🧳 ${esc(formatDateShort(state.tripStartDate))} → ${esc(formatDateShort(state.tripEndDate))}</div>`
         : `<div class="planRangeNote">🌱 Tip: set trip start and end dates in Setup so empty restaurant days also appear in the coverage table.</div>`;
       renderPlanDateStrip();
+      renderAccommodations();
       renderMealCoverage();
       renderItinerary();
       renderCalendarView();
@@ -4174,7 +4877,7 @@
 
     function renderDashboardPlan() {
       if (!$('dashboardPlanSummary')) return;
-      const events = sortedEvents();
+      const events = allPlanEvents();
       const now = Date.now();
       const next = events.find(event => eventDateTime(event) >= now) || events[events.length - 1];
       if (!next) {
@@ -4388,6 +5091,21 @@
           ${sortedEvents().map(event => `<option value="${esc(event.id)}" ${event.id === expense.eventId ? 'selected' : ''}>${esc(eventEmoji(event.type))} ${esc(event.date || '')} · ${esc(event.startTime || '')} · ${esc(event.title || 'Untitled event')}</option>`).join('')}
         </select>
 
+        <label>Related accommodation <span class="hint">(optional)</span></label>
+        <select id="${prefix}Accommodation">
+          <option value="">No linked accommodation</option>
+          ${(state.accommodations || [])
+            .slice()
+            .sort((a, b) => String(a.checkInDate || '').localeCompare(String(b.checkInDate || '')))
+            .map(accommodation => `
+              <option
+                value="${esc(accommodation.id)}"
+                ${accommodation.id === expense.accommodationId ? 'selected' : ''}>
+                🏨 ${esc(accommodation.checkInDate || '')} → ${esc(accommodation.checkOutDate || '')} · ${esc(accommodation.name || 'Accommodation')}
+              </option>`)
+            .join('')}
+        </select>
+
         <div class="box">
           <div class="top">
             <div class="hint"><b>Split with — choose one or more</b></div>
@@ -4451,6 +5169,7 @@
       const payer = $(prefix + 'Payer').querySelector('.chip.active')?.dataset.person;
       const splitWith = [...$(prefix + 'Split').querySelectorAll('.chip.active')].map(chip => chip.dataset.person);
       const eventId = $(prefix + 'Event')?.value || '';
+      const accommodationId = $(prefix + 'Accommodation')?.value || '';
 
       if (!description) throw new Error('Enter a description');
       if (!amount || amount <= 0) throw new Error('Enter amount');
@@ -4468,6 +5187,7 @@
         payer,
         splitWith,
         eventId,
+        accommodationId,
         updatedAt: Date.now()
       };
     }
@@ -4606,6 +5326,7 @@
                 ${esc(expense.currency)} ${money(expense.amount)} × FX ${money(expense.fxRate)} = <b>${money(base)} ${esc(state.baseCurrency)}</b><br>
                 Split: ${esc((expense.splitWith || []).join(', '))}
                 ${expense.eventId && state.events.find(event => event.id === expense.eventId) ? `<div class="linkedEventMini">📅 ${esc(state.events.find(event => event.id === expense.eventId).title)}</div>` : ''}
+                ${expense.accommodationId && state.accommodations.find(accommodation => accommodation.id === expense.accommodationId) ? `<div class="linkedEventMini">🏨 ${esc(state.accommodations.find(accommodation => accommodation.id === expense.accommodationId).name)}</div>` : ''}
               </div>
             </div>
             <div style="text-align:right">
@@ -4742,11 +5463,17 @@
       $('search').oninput = render;
       $('closeEdit').onclick = () => $('editWrap').classList.remove('show');
       $('addEventBtn').onclick = () => openEventModal();
+      $('addAccommodationBtn').onclick = () => openAccommodationModal();
       $('planItineraryBtn').onclick = () => { selectedPlanView = 'itinerary'; renderPlan(); };
       $('planCalendarBtn').onclick = () => { selectedPlanView = 'calendar'; renderPlan(); };
       $('closeEvent').onclick = closeEventModal;
       $('cancelEvent').onclick = closeEventModal;
       $('saveEventBtn').onclick = saveEvent;
+
+      $('closeAccommodation').onclick = closeAccommodationModal;
+      $('cancelAccommodation').onclick = closeAccommodationModal;
+      $('saveAccommodationBtn').onclick = saveAccommodation;
+      $('accommodationCheckInDateInput').onchange = syncAccommodationDateLimits;
 
       $('addPerson').onclick = async () => {
         const name = $('personInput').value.trim();
@@ -4831,6 +5558,9 @@
       $('eventWrap').addEventListener('click', event => {
         if (event.target === $('eventWrap')) closeEventModal();
       });
+      $('accommodationWrap').addEventListener('click', event => {
+        if (event.target === $('accommodationWrap')) closeAccommodationModal();
+      });
       $('inviteWrap').addEventListener('click', event => {
         if (event.target === $('inviteWrap')) closeInviteModal();
       });
@@ -4906,6 +5636,11 @@
           state.events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           render();
         }, error => status('Itinerary error: ' + error.message));
+
+        unsubscribeAccommodations = tripRef.collection('accommodations').onSnapshot(snapshot => {
+          state.accommodations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          render();
+        }, error => status('Accommodation error: ' + error.message));
 
         try {
           const pendingRaw = sessionStorage.getItem('tripPlannerOpenInviteAfterCreate');
@@ -4990,6 +5725,7 @@
             if (unsubscribeTrip) { unsubscribeTrip(); unsubscribeTrip = null; }
             if (unsubscribeExpenses) { unsubscribeExpenses(); unsubscribeExpenses = null; }
             if (unsubscribeEvents) { unsubscribeEvents(); unsubscribeEvents = null; }
+            if (unsubscribeAccommodations) { unsubscribeAccommodations(); unsubscribeAccommodations = null; }
             showAuthScreen();
             return;
           }
