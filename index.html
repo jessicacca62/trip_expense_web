@@ -288,7 +288,7 @@
       bottom: 0;
       z-index: 20;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
       background: rgba(255, 250, 242, .94);
       border-top: 1px solid var(--line);
@@ -638,6 +638,313 @@
 
     .modalActions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 14px; }
 
+
+    /* ─────────────────────────────────────────────
+       Trip Plan / itinerary calendar
+       Uses the same soft-paper palette and rounded visual language.
+       ───────────────────────────────────────────── */
+    .planIntro {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .planIntroCopy { min-width: 0; flex: 1; }
+    .planIntroCopy h2 { margin-bottom: 4px; }
+
+    .dateStrip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 1px 7px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .dateStrip::-webkit-scrollbar { display: none; }
+
+    .dateChip {
+      flex: 0 0 auto;
+      min-width: 70px;
+      min-height: 54px;
+      padding: 8px 10px;
+      background: var(--card-soft);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      box-shadow: none;
+      text-align: center;
+    }
+
+    .dateChip:hover { background: var(--peach-soft); box-shadow: none; }
+    .dateChip.active {
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+      border-color: #c5d8d1;
+    }
+
+    .dateChip .dow { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .dateChip .day { display: block; font-size: 17px; font-weight: 950; margin-top: 1px; }
+    .dateChip .month { display: block; font-size: 10px; color: var(--muted); }
+
+    .mealLegend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 2px 0 10px;
+    }
+
+    .mealLegend span,
+    .bookingBadge,
+    .expenseLinkBadge,
+    .eventTypeBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      width: fit-content;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.15;
+    }
+
+    .mealLegend span { padding: 5px 8px; background: var(--card-soft); border: 1px solid var(--line); color: var(--muted); }
+
+    .mealTableWrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255, 250, 242, .72);
+    }
+
+    .mealTable {
+      width: 100%;
+      min-width: 470px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .mealTable th,
+    .mealTable td {
+      padding: 10px 8px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mealTable th { color: var(--muted); font-size: 11px; background: rgba(243, 223, 207, .28); }
+    .mealTable tbody tr:last-child td { border-bottom: 0; }
+    .mealTable td:first-child, .mealTable th:first-child { text-align: left; white-space: nowrap; }
+
+    .mealStatus {
+      min-width: 34px;
+      min-height: 29px;
+      padding: 5px 7px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .mealStatus.reserved { background: var(--sage-soft); color: #55634c; }
+    .mealStatus.planned { background: var(--gold-soft); color: #806c47; }
+    .mealStatus.waitlist { background: var(--rose-soft); color: #8d5f63; }
+    .mealStatus.casual { background: var(--teal-soft); color: var(--teal-deep); }
+    .mealStatus.emptySlot { background: rgba(244, 221, 221, .58); color: var(--danger); }
+
+    .planDayGroup { margin-top: 16px; }
+    .planDayHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 5px 2px 9px;
+    }
+
+    .planDayHeader h3 { font-size: 16px; }
+
+    .timeline {
+      position: relative;
+      margin-left: 8px;
+      padding-left: 21px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 10px;
+      bottom: 12px;
+      width: 2px;
+      border-radius: 99px;
+      background: linear-gradient(var(--peach), var(--teal), var(--rose));
+      opacity: .35;
+    }
+
+    .timelineEvent {
+      position: relative;
+      background: rgba(255, 250, 242, .95);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 13px;
+      margin: 0 0 11px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .timelineDot {
+      position: absolute;
+      left: -22px;
+      top: 18px;
+      width: 14px;
+      height: 14px;
+      border: 3px solid var(--paper);
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 1px rgba(102, 143, 135, .22);
+    }
+
+    .eventTop {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .eventTitleWrap { min-width: 0; display: flex; gap: 9px; align-items: flex-start; }
+
+    .eventEmoji {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      font-size: 20px;
+      background: var(--peach-soft);
+    }
+
+    .eventTitle { font-size: 15px; font-weight: 950; color: var(--ink-strong); line-height: 1.35; }
+    .eventTime { font-size: 12px; color: var(--teal-deep); font-weight: 900; margin-top: 3px; }
+    .eventMeta { font-size: 12px; color: var(--muted); line-height: 1.55; margin-top: 8px; }
+
+    .eventBadgeRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 9px;
+    }
+
+    .bookingBadge,
+    .expenseLinkBadge,
+    .eventTypeBadge { padding: 6px 8px; }
+
+    .bookingBadge.reserved { background: var(--sage-soft); color: #55634c; }
+    .bookingBadge.planned { background: var(--gold-soft); color: #806c47; }
+    .bookingBadge.waitlist { background: var(--rose-soft); color: #8d5f63; }
+    .bookingBadge.casual { background: var(--teal-soft); color: var(--teal-deep); }
+
+    .expenseLinkBadge.linked { background: var(--teal-soft); color: var(--teal-deep); }
+    .expenseLinkBadge.missing { background: var(--danger-soft); color: var(--danger); }
+    .expenseLinkBadge.future { background: var(--card-soft); color: var(--muted); border: 1px solid var(--line); }
+
+    .eventActionRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .eventActionRow button,
+    .eventActionRow a {
+      min-height: 34px;
+      padding: 7px 9px;
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .eventActionRow a {
+      background: var(--teal-soft);
+      color: var(--teal-deep);
+      border: 1px solid #ccdcd6;
+    }
+
+    .eventActionRow .directionsLink { background: var(--peach-soft); color: #7b5b49; border-color: #ead8c7; }
+    .eventActionRow .bookingLink { background: var(--rose-soft); color: #8d5f63; border-color: #e6cccc; }
+
+    .planEmpty {
+      text-align: center;
+      padding: 28px 14px;
+      color: var(--muted);
+      border: 1px dashed var(--line-strong);
+      border-radius: 18px;
+      background: rgba(255, 250, 242, .55);
+    }
+
+    .planEmptyEmoji { font-size: 34px; margin-bottom: 7px; }
+
+    .dashboardPlanCard {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: linear-gradient(145deg, var(--teal-soft), #edf4f0);
+    }
+
+    .dashboardPlanCard .nextTitle { font-weight: 950; color: var(--ink-strong); }
+    .dashboardPlanCard .nextMeta { color: var(--muted); font-size: 12px; margin-top: 4px; line-height: 1.5; }
+
+    .linkedEventMini {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: var(--rose-soft);
+      color: #8d5f63;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .expenseLinkPicker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .expenseLinkPicker .chip { font-size: 12px; min-height: 36px; padding: 8px 10px; }
+
+    .eventNotes {
+      margin-top: 8px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      background: var(--card-soft);
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .planRangeNote {
+      margin-top: 8px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      background: var(--peach-soft);
+      color: #765745;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
     @media (max-width: 520px) {
       .grid3 { grid-template-columns: 1fr 1fr; }
       .grid3 .metric:last-child { grid-column: 1 / -1; }
@@ -747,6 +1054,16 @@
 
         <div class="card">
           <div class="cardTitle">
+            <span class="sectionIcon">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="M8 13h3M13 13h3M8 17h3"/></svg>
+            </span>
+            <h2>Next on the Plan</h2>
+          </div>
+          <div id="dashboardPlanSummary"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
             <span class="sectionIcon rose">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
             </span>
@@ -773,6 +1090,55 @@
             <h2>Balances</h2>
           </div>
           <div id="dashboardBalances"></div>
+        </div>
+      </section>
+
+      <section id="plan" class="view">
+        <div class="card">
+          <div class="planIntro">
+            <div class="planIntroCopy">
+              <div class="cardTitle" style="margin-bottom:3px">
+                <span class="sectionIcon peach">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="M8 13h3M13 13h3M8 17h3"/></svg>
+                </span>
+                <h2>Trip Plan</h2>
+              </div>
+              <div class="hint">Plan each stop, track restaurant bookings, open maps, and connect events to expenses.</div>
+            </div>
+            <button id="addEventBtn" class="iconText">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              Add Event
+            </button>
+          </div>
+          <div id="planRangeNote"></div>
+          <div id="planDateStrip" class="dateStrip" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon rose">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v5M16 3v5M5 8h14M7 12h10M7 16h7"/></svg>
+            </span>
+            <h2>Restaurant Coverage</h2>
+          </div>
+          <div class="mealLegend">
+            <span>✅ Reserved</span>
+            <span>🟡 Planned</span>
+            <span>⏳ Waitlist</span>
+            <span>☕ No booking needed</span>
+            <span>○ Open slot</span>
+          </div>
+          <div id="mealCoverage"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">
+            <span class="sectionIcon sage">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M5 12h14M5 20h14"/><circle cx="8" cy="4" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="16" cy="20" r="1"/></svg>
+            </span>
+            <h2>Day-by-Day Itinerary</h2>
+          </div>
+          <div id="itineraryList"></div>
         </div>
       </section>
 
@@ -836,6 +1202,11 @@
             <div><label>Base currency</label><select id="baseCurrency"></select></div>
             <div><label>Default expense currency</label><select id="defaultCurrency"></select></div>
           </div>
+          <div class="grid">
+            <div><label>Trip start date</label><input id="tripStartDate" type="date" /></div>
+            <div><label>Trip end date</label><input id="tripEndDate" type="date" /></div>
+          </div>
+          <div class="hint">Trip dates let the restaurant planner show days that still have empty breakfast, lunch, or dinner slots.</div>
           <button id="saveTrip" class="iconText" style="width:100%;margin-top:10px">
             <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
             Save Trip Settings
@@ -892,7 +1263,11 @@
     <nav class="tabs" aria-label="Trip navigation">
       <button class="tab active" data-view="dashboard">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h7V3H3v9Zm11 9h7V12h-7v9ZM3 21h7v-5H3v5Zm11-13h7V3h-7v5Z"/></svg>
-        <span>Dashboard</span>
+        <span>Home</span>
+      </button>
+      <button class="tab" data-view="plan">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="M8 13h3M13 13h3M8 17h3"/></svg>
+        <span>Plan</span>
       </button>
       <button class="tab" data-view="expenses">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l3 3v17H6V2Z"/><path d="M14 2v4h4M9 10h6M9 14h6M9 18h4"/></svg>
@@ -911,6 +1286,99 @@
         <span>Setup</span>
       </button>
     </nav>
+  </div>
+
+  <!-- Add / edit itinerary event modal. -->
+  <div id="eventWrap" class="modalWrap">
+    <div class="modal">
+      <div class="top">
+        <div class="cardTitle" style="margin:0">
+          <span class="sectionIcon peach">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="M12 12v5M9.5 14.5h5"/></svg>
+          </span>
+          <h2 id="eventModalTitle">Add to Itinerary</h2>
+        </div>
+        <button id="closeEvent" class="small ghost">Close</button>
+      </div>
+
+      <label>Event title</label>
+      <input id="eventTitleInput" placeholder="e.g. Sushi Yoshitake" />
+
+      <div class="grid">
+        <div>
+          <label>Type</label>
+          <select id="eventTypeInput">
+            <option value="Meal">🍽️ Meal</option>
+            <option value="Flight">✈️ Flight</option>
+            <option value="Transport">🚆 Transport</option>
+            <option value="Hotel">🏨 Hotel</option>
+            <option value="Sightseeing">🏛️ Sightseeing</option>
+            <option value="Activity">🎟️ Activity</option>
+            <option value="Shopping">🛍️ Shopping</option>
+            <option value="Free time">🌿 Free time</option>
+            <option value="Other">📌 Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Date</label>
+          <input id="eventDateInput" type="date" />
+        </div>
+      </div>
+
+      <div class="grid">
+        <div><label>From</label><input id="eventStartInput" type="time" /></div>
+        <div><label>To</label><input id="eventEndInput" type="time" /></div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Meal slot</label>
+          <select id="eventMealInput">
+            <option value="">Not a meal</option>
+            <option value="Breakfast">🍳 Breakfast</option>
+            <option value="Lunch">🍜 Lunch</option>
+            <option value="Dinner">🍣 Dinner</option>
+          </select>
+        </div>
+        <div>
+          <label>Booking status</label>
+          <select id="eventBookingInput">
+            <option value="Not required">☕ No booking needed</option>
+            <option value="Planned">🟡 Planned</option>
+            <option value="Reserved">✅ Reserved</option>
+            <option value="Waitlist">⏳ Waitlist</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Location</label>
+      <input id="eventLocationInput" placeholder="Restaurant, hotel, attraction, address…" />
+
+      <label>Google Maps link <span class="hint">(optional — we'll generate a search link from the location if blank)</span></label>
+      <input id="eventMapUrlInput" type="url" placeholder="https://maps.google.com/…" />
+
+      <div class="grid">
+        <div><label>Reservation confirmation</label><input id="eventConfirmationInput" placeholder="ABC123" /></div>
+        <div><label>Booking URL</label><input id="eventBookingUrlInput" type="url" placeholder="https://…" /></div>
+      </div>
+
+      <label>Notes</label>
+      <textarea id="eventNotesInput" placeholder="Counter seats · 6 people · arrive 10 minutes early…"></textarea>
+
+      <div class="box">
+        <div class="hint"><b>🧾 Link existing expenses — optional</b></div>
+        <div class="hint">Tap one or more expenses. You can also link an event later while adding or editing an expense.</div>
+        <div id="eventExpenseLinks" class="expenseLinkPicker"></div>
+      </div>
+
+      <div class="modalActions">
+        <button id="cancelEvent" class="ghost">Cancel</button>
+        <button id="saveEventBtn" class="iconText">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          Save Event
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Edit expense modal. -->
@@ -948,6 +1416,11 @@
       <div class="grid">
         <div><label>Base currency</label><select id="newTripBase"></select></div>
         <div><label>Default expense currency</label><select id="newTripDefault"></select></div>
+      </div>
+
+      <div class="grid">
+        <div><label>Trip start date</label><input id="newTripStartDate" type="date" /></div>
+        <div><label>Trip end date</label><input id="newTripEndDate" type="date" /></div>
       </div>
 
       <label>People</label>
@@ -997,14 +1470,19 @@
     let authReady = false;
     let unsubscribeTrip = null;
     let unsubscribeExpenses = null;
+    let unsubscribeEvents = null;
     let unsubscribeTripList = null;
     let launcherTrips = [];
+    let selectedPlanDate = 'all';
+    let editingEventId = null;
 
     let state = {
       tripName: 'Trip Expense',
       people: ['Jess', 'Amy', 'Matt'],
       baseCurrency: 'HKD',
       defaultCurrency: 'THB',
+      tripStartDate: '',
+      tripEndDate: '',
       fxRates: {
         HKD: 1,
         THB: .22,
@@ -1022,7 +1500,8 @@
         CAD: 5.7,
         CHF: 8.8
       },
-      expenses: []
+      expenses: [],
+      events: []
     };
 
     const $ = id => document.getElementById(id);
@@ -1038,6 +1517,74 @@
     function expenseDate(expense) {
       return expense.date || (expense.createdAt ? new Date(expense.createdAt).toISOString().slice(0, 10) : today());
     }
+
+    function parseLocalDate(dateString) {
+      if (!dateString) return null;
+      const [year, month, day] = String(dateString).split('-').map(Number);
+      if (!year || !month || !day) return null;
+      return new Date(year, month - 1, day, 12, 0, 0, 0);
+    }
+
+    function dateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDateLong(value) {
+      const date = parseLocalDate(value);
+      return date ? date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) : value || '';
+    }
+
+    function formatDateShort(value) {
+      const date = parseLocalDate(value);
+      return date ? date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : value || '';
+    }
+
+    function formatTime(value) {
+      if (!value) return 'Any time';
+      const [hours, minutes] = String(value).split(':').map(Number);
+      const d = new Date(2000, 0, 1, hours || 0, minutes || 0);
+      return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function eventDateTime(event) {
+      const date = parseLocalDate(event.date);
+      if (!date) return 0;
+      const [hours, minutes] = String(event.startTime || '23:59').split(':').map(Number);
+      date.setHours(hours || 0, minutes || 0, 0, 0);
+      return date.getTime();
+    }
+
+    function sortedEvents(events = state.events) {
+      return [...(events || [])].sort((a, b) =>
+        String(a.date || '').localeCompare(String(b.date || '')) ||
+        String(a.startTime || '').localeCompare(String(b.startTime || '')) ||
+        String(a.title || '').localeCompare(String(b.title || ''))
+      );
+    }
+
+    function tripDates() {
+      const dates = [];
+      let start = parseLocalDate(state.tripStartDate);
+      let end = parseLocalDate(state.tripEndDate);
+
+      if (!start || !end || end < start) {
+        const eventDates = [...new Set((state.events || []).map(event => event.date).filter(Boolean))].sort();
+        return eventDates;
+      }
+
+      // Protect the browser from accidental multi-year ranges while allowing normal long trips.
+      const limit = 120;
+      const cursor = new Date(start);
+      while (cursor <= end && dates.length < limit) {
+        dates.push(dateKey(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return dates;
+    }
+
 
     function status(text) {
       if ($('status')) $('status').textContent = text;
@@ -1309,7 +1856,7 @@
 
       const name = trip.tripName || 'Untitled trip';
       const confirmed = confirm(
-        `Delete "${name}"?\n\nThis permanently deletes the trip and all of its expenses. This cannot be undone.`
+        `Delete "${name}"?\n\nThis permanently deletes the trip, its expenses, and itinerary events. This cannot be undone.`
       );
       if (!confirmed) return;
 
@@ -1318,11 +1865,14 @@
         launcherStatus(`Deleting ${name}…`);
 
         const ref = db.collection('trips').doc(id);
-        const expensesSnapshot = await ref.collection('expenses').get();
+        const [expensesSnapshot, eventsSnapshot] = await Promise.all([
+          ref.collection('expenses').get(),
+          ref.collection('events').get()
+        ]);
 
         // Firestore does not automatically delete subcollections when a parent document is deleted.
-        // Delete expenses in safe batches first, then delete the trip document itself.
-        const docs = expensesSnapshot.docs;
+        // Delete expenses and itinerary events in safe batches first, then delete the trip document.
+        const docs = [...expensesSnapshot.docs, ...eventsSnapshot.docs];
         const batchSize = 400;
 
         for (let i = 0; i < docs.length; i += batchSize) {
@@ -1342,6 +1892,8 @@
     function openNewTripModal() {
       $('newTripName').value = '';
       $('newTripPeople').value = 'Jessica';
+      $('newTripStartDate').value = '';
+      $('newTripEndDate').value = '';
       fillNewTripCurrencySelects();
       $('newTripWrap').classList.add('show');
       setTimeout(() => $('newTripName').focus(), 50);
@@ -1365,9 +1917,12 @@
       const people = parsePeople($('newTripPeople').value);
       const baseCurrency = $('newTripBase').value;
       const defaultCurrency = $('newTripDefault').value;
+      const tripStartDate = $('newTripStartDate').value || '';
+      const tripEndDate = $('newTripEndDate').value || '';
 
       if (!name) return toast('Enter a trip name');
       if (!people.length) return toast('Add at least one person');
+      if (tripStartDate && tripEndDate && tripEndDate < tripStartDate) return toast('Trip end date must be after the start date');
 
       button.disabled = true;
       button.textContent = 'Creating…';
@@ -1381,6 +1936,8 @@
           people,
           baseCurrency,
           defaultCurrency,
+          tripStartDate,
+          tripEndDate,
           fxRates,
           settled: false,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1415,6 +1972,391 @@
         goToTrip(id);
       } catch (error) {
         toast(`Could not open trip: ${error.message}`);
+      }
+    }
+
+
+    const EVENT_TYPE_EMOJI = {
+      'Meal': '🍽️',
+      'Flight': '✈️',
+      'Transport': '🚆',
+      'Hotel': '🏨',
+      'Sightseeing': '🏛️',
+      'Activity': '🎟️',
+      'Shopping': '🛍️',
+      'Free time': '🌿',
+      'Other': '📌'
+    };
+
+    function eventEmoji(type) {
+      return EVENT_TYPE_EMOJI[type] || '📌';
+    }
+
+    function bookingClass(statusValue) {
+      if (statusValue === 'Reserved') return 'reserved';
+      if (statusValue === 'Planned') return 'planned';
+      if (statusValue === 'Waitlist') return 'waitlist';
+      return 'casual';
+    }
+
+    function bookingLabel(statusValue) {
+      if (statusValue === 'Reserved') return '✅ Reserved';
+      if (statusValue === 'Planned') return '🟡 Planned';
+      if (statusValue === 'Waitlist') return '⏳ Waitlist';
+      return '☕ No booking needed';
+    }
+
+    function mapSearchUrl(event) {
+      if (event.mapUrl && /^https?:\/\//i.test(event.mapUrl)) return event.mapUrl;
+      if (!event.location) return '';
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
+    }
+
+    function directionsUrl(originEvent, destinationEvent) {
+      if (!originEvent?.location || !destinationEvent?.location) return '';
+      return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(originEvent.location)}&destination=${encodeURIComponent(destinationEvent.location)}`;
+    }
+
+    function mealCoverageCell(date, meal) {
+      const matching = sortedEvents().filter(event => event.date === date && event.mealSlot === meal);
+      if (!matching.length) {
+        return `<span class="mealStatus emptySlot" title="Nothing planned">○</span>`;
+      }
+      const rank = { 'Reserved': 4, 'Waitlist': 3, 'Planned': 2, 'Not required': 1 };
+      const best = [...matching].sort((a, b) => (rank[b.bookingStatus] || 0) - (rank[a.bookingStatus] || 0))[0];
+      const cls = bookingClass(best.bookingStatus);
+      const symbol = best.bookingStatus === 'Reserved' ? '✓' : best.bookingStatus === 'Waitlist' ? '⏳' : best.bookingStatus === 'Planned' ? '●' : '☕';
+      return `<span class="mealStatus ${cls}" title="${esc(best.title || meal)} · ${esc(best.bookingStatus || 'Not required')}">${symbol}</span>`;
+    }
+
+    function renderMealCoverage() {
+      const dates = tripDates();
+      if (!dates.length) {
+        $('mealCoverage').innerHTML = '<div class="planEmpty"><div class="planEmptyEmoji">🍽️</div><b>No trip dates yet</b><div class="hint" style="margin-top:5px">Set the trip start and end dates in Setup, or add itinerary events.</div></div>';
+        return;
+      }
+
+      $('mealCoverage').innerHTML = `
+        <div class="mealTableWrap">
+          <table class="mealTable">
+            <thead><tr><th>Day</th><th>🍳 Breakfast</th><th>🍜 Lunch</th><th>🍣 Dinner</th></tr></thead>
+            <tbody>
+              ${dates.map(date => `
+                <tr>
+                  <td><b>${esc(formatDateShort(date))}</b></td>
+                  <td>${mealCoverageCell(date, 'Breakfast')}</td>
+                  <td>${mealCoverageCell(date, 'Lunch')}</td>
+                  <td>${mealCoverageCell(date, 'Dinner')}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    function renderPlanDateStrip() {
+      const dates = tripDates();
+      if (selectedPlanDate !== 'all' && !dates.includes(selectedPlanDate)) selectedPlanDate = 'all';
+
+      const allButton = `<button class="dateChip ${selectedPlanDate === 'all' ? 'active' : ''}" data-plan-date="all"><span class="dow">View</span><span class="day">All</span><span class="month">days</span></button>`;
+      const dayButtons = dates.map(value => {
+        const date = parseLocalDate(value);
+        return `<button class="dateChip ${selectedPlanDate === value ? 'active' : ''}" data-plan-date="${esc(value)}">
+          <span class="dow">${esc(date.toLocaleDateString(undefined, { weekday: 'short' }))}</span>
+          <span class="day">${date.getDate()}</span>
+          <span class="month">${esc(date.toLocaleDateString(undefined, { month: 'short' }))}</span>
+        </button>`;
+      }).join('');
+
+      $('planDateStrip').innerHTML = allButton + dayButtons;
+      [...$('planDateStrip').querySelectorAll('[data-plan-date]')].forEach(button => {
+        button.onclick = () => {
+          selectedPlanDate = button.dataset.planDate;
+          renderPlan();
+        };
+      });
+    }
+
+    function expenseLinksForEvent(eventId) {
+      return state.expenses.filter(expense => expense.eventId === eventId);
+    }
+
+    function eventCard(event, nextEvent) {
+      const linkedExpenses = expenseLinksForEvent(event.id);
+      const eventMs = eventDateTime(event);
+      const isPast = eventMs && eventMs < Date.now();
+      const mapUrl = mapSearchUrl(event);
+      const nextDirections = directionsUrl(event, nextEvent);
+      const timeText = event.startTime
+        ? `${formatTime(event.startTime)}${event.endTime ? ` – ${formatTime(event.endTime)}` : ''}`
+        : 'Any time';
+
+      const expenseBadge = linkedExpenses.length
+        ? `<span class="expenseLinkBadge linked">🧾 ${linkedExpenses.length} expense${linkedExpenses.length === 1 ? '' : 's'} linked</span>`
+        : isPast
+          ? `<span class="expenseLinkBadge missing">⚠️ Past event · no expense linked</span>`
+          : `<span class="expenseLinkBadge future">🧾 No expense linked yet</span>`;
+
+      const linkedExpenseDetail = linkedExpenses.length
+        ? `<div class="eventMeta">${linkedExpenses.map(expense => `${esc(expense.description)} · ${esc(expense.currency)} ${money(expense.amount)}`).join('<br>')}</div>`
+        : '';
+
+      return `
+        <div class="timelineEvent">
+          <span class="timelineDot"></span>
+          <div class="eventTop">
+            <div class="eventTitleWrap">
+              <div class="eventEmoji">${esc(eventEmoji(event.type))}</div>
+              <div style="min-width:0">
+                <div class="eventTitle">${esc(event.title || 'Untitled event')}</div>
+                <div class="eventTime">${esc(timeText)}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="eventBadgeRow">
+            <span class="eventTypeBadge" style="background:var(--peach-soft);color:#7b5b49">${esc(eventEmoji(event.type))} ${esc(event.type || 'Other')}</span>
+            ${event.mealSlot ? `<span class="bookingBadge ${bookingClass(event.bookingStatus)}">${esc(bookingLabel(event.bookingStatus))} · ${esc(event.mealSlot)}</span>` : ''}
+            ${expenseBadge}
+          </div>
+
+          ${event.location ? `<div class="eventMeta">📍 ${esc(event.location)}</div>` : ''}
+          ${event.confirmation ? `<div class="eventMeta">📋 Confirmation: <b>${esc(event.confirmation)}</b></div>` : ''}
+          ${linkedExpenseDetail}
+          ${event.notes ? `<div class="eventNotes">${esc(event.notes)}</div>` : ''}
+
+          <div class="eventActionRow">
+            ${mapUrl ? `<a href="${esc(mapUrl)}" target="_blank" rel="noopener">📍 Open map</a>` : ''}
+            ${nextDirections ? `<a class="directionsLink" href="${esc(nextDirections)}" target="_blank" rel="noopener">🧭 To next stop</a>` : ''}
+            ${event.bookingUrl && /^https?:\/\//i.test(event.bookingUrl) ? `<a class="bookingLink" href="${esc(event.bookingUrl)}" target="_blank" rel="noopener">🔖 Booking</a>` : ''}
+            <button class="small ghost iconText" data-edit-event="${esc(event.id)}">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z"/></svg>
+              Edit
+            </button>
+            <button class="small danger iconText" data-delete-event="${esc(event.id)}">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function renderItinerary() {
+      let events = sortedEvents();
+      if (selectedPlanDate !== 'all') events = events.filter(event => event.date === selectedPlanDate);
+
+      if (!events.length) {
+        $('itineraryList').innerHTML = `<div class="planEmpty"><div class="planEmptyEmoji">🗓️</div><b>No events ${selectedPlanDate === 'all' ? 'yet' : 'on this day'}</b><div class="hint" style="margin-top:5px">Add a restaurant, activity, flight, hotel, or any other stop.</div><button class="small secondary iconText" data-empty-add-event style="margin-top:12px"><span>✨</span> Add event</button></div>`;
+        $('itineraryList').querySelector('[data-empty-add-event]').onclick = () => openEventModal();
+        return;
+      }
+
+      const byDate = new Map();
+      events.forEach(event => {
+        if (!byDate.has(event.date)) byDate.set(event.date, []);
+        byDate.get(event.date).push(event);
+      });
+
+      $('itineraryList').innerHTML = [...byDate.entries()].map(([date, dayEvents]) => `
+        <section class="planDayGroup">
+          <div class="planDayHeader">
+            <h3>${esc(formatDateLong(date))}</h3>
+            <span class="hint">${dayEvents.length} event${dayEvents.length === 1 ? '' : 's'}</span>
+          </div>
+          <div class="timeline">
+            ${dayEvents.map((event, index) => eventCard(event, dayEvents[index + 1])).join('')}
+          </div>
+        </section>`).join('');
+
+      [...$('itineraryList').querySelectorAll('[data-edit-event]')].forEach(button => {
+        button.onclick = () => openEventModal(button.dataset.editEvent);
+      });
+      [...$('itineraryList').querySelectorAll('[data-delete-event]')].forEach(button => {
+        button.onclick = () => deleteEvent(button.dataset.deleteEvent);
+      });
+    }
+
+    function renderPlan() {
+      if (!$('planDateStrip')) return;
+      const hasRange = state.tripStartDate && state.tripEndDate && state.tripEndDate >= state.tripStartDate;
+      $('planRangeNote').innerHTML = hasRange
+        ? `<div class="planRangeNote">🧳 ${esc(formatDateShort(state.tripStartDate))} → ${esc(formatDateShort(state.tripEndDate))}</div>`
+        : `<div class="planRangeNote">🌱 Tip: set trip start and end dates in Setup so empty restaurant days also appear in the coverage table.</div>`;
+      renderPlanDateStrip();
+      renderMealCoverage();
+      renderItinerary();
+      renderDashboardPlan();
+    }
+
+    function renderDashboardPlan() {
+      if (!$('dashboardPlanSummary')) return;
+      const events = sortedEvents();
+      const now = Date.now();
+      const next = events.find(event => eventDateTime(event) >= now) || events[events.length - 1];
+      if (!next) {
+        $('dashboardPlanSummary').innerHTML = `<div class="dashboardPlanCard"><div class="nextTitle">🌱 Nothing planned yet</div><div class="nextMeta">Open Plan to add your first restaurant, activity, hotel, or transport stop.</div><button class="small secondary" data-open-plan style="margin-top:10px">📅 Open Plan</button></div>`;
+      } else {
+        $('dashboardPlanSummary').innerHTML = `<div class="dashboardPlanCard"><div class="nextTitle">${esc(eventEmoji(next.type))} ${esc(next.title || 'Untitled event')}</div><div class="nextMeta">${esc(formatDateLong(next.date))} · ${esc(next.startTime ? formatTime(next.startTime) : 'Any time')}${next.location ? `<br>📍 ${esc(next.location)}` : ''}</div><button class="small secondary" data-open-plan style="margin-top:10px">📅 View itinerary</button></div>`;
+      }
+      const button = $('dashboardPlanSummary').querySelector('[data-open-plan]');
+      if (button) button.onclick = () => activateView('plan');
+    }
+
+    function activateView(viewName) {
+      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      $(viewName)?.classList.add('active');
+      document.querySelector(`.tab[data-view="${viewName}"]`)?.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderEventExpensePicker(eventId) {
+      const box = $('eventExpenseLinks');
+      if (!box) return;
+      if (!state.expenses.length) {
+        box.innerHTML = '<div class="hint">No expenses yet.</div>';
+        return;
+      }
+      box.innerHTML = [...state.expenses]
+        .sort((a, b) => expenseDate(b).localeCompare(expenseDate(a)))
+        .map(expense => `<button type="button" class="chip ${eventId && expense.eventId === eventId ? 'active' : ''}" data-event-expense-id="${esc(expense.id)}">${esc(expense.description)} · ${esc(expense.currency)} ${money(expense.amount)}</button>`)
+        .join('');
+      [...box.querySelectorAll('[data-event-expense-id]')].forEach(button => {
+        button.onclick = () => button.classList.toggle('active');
+      });
+    }
+
+    function openEventModal(id = null) {
+      editingEventId = id;
+      const event = id ? state.events.find(item => item.id === id) : null;
+      const defaultDate = selectedPlanDate !== 'all' ? selectedPlanDate : (state.tripStartDate || today());
+
+      $('eventModalTitle').textContent = event ? 'Edit Itinerary Event' : 'Add to Itinerary';
+      $('eventTitleInput').value = event?.title || '';
+      $('eventTypeInput').value = event?.type || 'Meal';
+      $('eventDateInput').value = event?.date || defaultDate;
+      $('eventStartInput').value = event?.startTime || '';
+      $('eventEndInput').value = event?.endTime || '';
+      $('eventMealInput').value = event?.mealSlot || '';
+      $('eventBookingInput').value = event?.bookingStatus || 'Not required';
+      $('eventLocationInput').value = event?.location || '';
+      $('eventMapUrlInput').value = event?.mapUrl || '';
+      $('eventConfirmationInput').value = event?.confirmation || '';
+      $('eventBookingUrlInput').value = event?.bookingUrl || '';
+      $('eventNotesInput').value = event?.notes || '';
+      renderEventExpensePicker(id || '');
+      $('eventWrap').classList.add('show');
+      setTimeout(() => $('eventTitleInput').focus(), 50);
+    }
+
+    function closeEventModal() {
+      editingEventId = null;
+      $('eventWrap').classList.remove('show');
+    }
+
+    async function syncExpenseLinksForEvent(eventId, selectedExpenseIds) {
+      const selected = new Set(selectedExpenseIds);
+      const changed = state.expenses.filter(expense =>
+        (expense.eventId === eventId && !selected.has(expense.id)) ||
+        (selected.has(expense.id) && expense.eventId !== eventId)
+      );
+      if (!changed.length) return;
+
+      if (tripRef) {
+        const batch = db.batch();
+        changed.forEach(expense => {
+          const ref = tripRef.collection('expenses').doc(expense.id);
+          if (selected.has(expense.id)) {
+            batch.set(ref, { eventId, updatedAt: Date.now() }, { merge: true });
+          } else {
+            batch.set(ref, { eventId: '', updatedAt: Date.now() }, { merge: true });
+          }
+        });
+        await batch.commit();
+      } else {
+        state.expenses = state.expenses.map(expense => {
+          if (selected.has(expense.id)) return { ...expense, eventId };
+          if (expense.eventId === eventId) return { ...expense, eventId: '' };
+          return expense;
+        });
+      }
+    }
+
+    async function saveEvent() {
+      const button = $('saveEventBtn');
+      const title = $('eventTitleInput').value.trim();
+      const date = $('eventDateInput').value;
+      if (!title) return toast('Enter an event title');
+      if (!date) return toast('Choose an event date');
+
+      const id = editingEventId || uuid();
+      const existing = state.events.find(item => item.id === id);
+      const event = {
+        id,
+        title,
+        type: $('eventTypeInput').value || 'Other',
+        date,
+        startTime: $('eventStartInput').value || '',
+        endTime: $('eventEndInput').value || '',
+        mealSlot: $('eventMealInput').value || '',
+        bookingStatus: $('eventBookingInput').value || 'Not required',
+        location: $('eventLocationInput').value.trim(),
+        mapUrl: $('eventMapUrlInput').value.trim(),
+        confirmation: $('eventConfirmationInput').value.trim(),
+        bookingUrl: $('eventBookingUrlInput').value.trim(),
+        notes: $('eventNotesInput').value.trim(),
+        createdAt: existing?.createdAt || Date.now(),
+        updatedAt: Date.now()
+      };
+
+      const selectedExpenseIds = [...$('eventExpenseLinks').querySelectorAll('[data-event-expense-id].active')].map(button => button.dataset.eventExpenseId);
+      button.disabled = true;
+
+      try {
+        if (tripRef) {
+          await tripRef.collection('events').doc(id).set(event, { merge: true });
+          await syncExpenseLinksForEvent(id, selectedExpenseIds);
+          await saveMeta();
+        } else {
+          const index = state.events.findIndex(item => item.id === id);
+          if (index >= 0) state.events[index] = event;
+          else state.events.push(event);
+          await syncExpenseLinksForEvent(id, selectedExpenseIds);
+          localStorage.setItem('trip-' + tripId, JSON.stringify(state));
+          render();
+        }
+        closeEventModal();
+        toast(existing ? 'Event updated' : 'Event added');
+      } catch (error) {
+        toast(`Could not save event: ${error.message}`);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function deleteEvent(id) {
+      const event = state.events.find(item => item.id === id);
+      if (!event) return;
+      if (!confirm(`Delete "${event.title}" from the itinerary?`)) return;
+
+      try {
+        const linked = state.expenses.filter(expense => expense.eventId === id);
+        if (tripRef) {
+          if (linked.length) {
+            const batch = db.batch();
+            linked.forEach(expense => batch.set(tripRef.collection('expenses').doc(expense.id), { eventId: '', updatedAt: Date.now() }, { merge: true }));
+            await batch.commit();
+          }
+          await tripRef.collection('events').doc(id).delete();
+          await saveMeta();
+        } else {
+          state.events = state.events.filter(item => item.id !== id);
+          state.expenses = state.expenses.map(expense => expense.eventId === id ? { ...expense, eventId: '' } : expense);
+          localStorage.setItem('trip-' + tripId, JSON.stringify(state));
+          render();
+        }
+        toast('Event deleted');
+      } catch (error) {
+        toast(`Could not delete event: ${error.message}`);
       }
     }
 
@@ -1454,6 +2396,12 @@
           <div class="hint"><b>Paid by — choose one</b></div>
           <div id="${prefix}Payer" class="chips">${peopleChips('payer', expense)}</div>
         </div>
+
+        <label>Related itinerary event <span class="hint">(optional)</span></label>
+        <select id="${prefix}Event">
+          <option value="">No linked itinerary event</option>
+          ${sortedEvents().map(event => `<option value="${esc(event.id)}" ${event.id === expense.eventId ? 'selected' : ''}>${esc(eventEmoji(event.type))} ${esc(event.date || '')} · ${esc(event.startTime || '')} · ${esc(event.title || 'Untitled event')}</option>`).join('')}
+        </select>
 
         <div class="box">
           <div class="top">
@@ -1517,6 +2465,7 @@
       const date = $(prefix + 'Date').value || today();
       const payer = $(prefix + 'Payer').querySelector('.chip.active')?.dataset.person;
       const splitWith = [...$(prefix + 'Split').querySelectorAll('.chip.active')].map(chip => chip.dataset.person);
+      const eventId = $(prefix + 'Event')?.value || '';
 
       if (!description) throw new Error('Enter a description');
       if (!amount || amount <= 0) throw new Error('Enter amount');
@@ -1533,6 +2482,7 @@
         baseAmount: amount * fxRate,
         payer,
         splitWith,
+        eventId,
         updatedAt: Date.now()
       };
     }
@@ -1579,6 +2529,8 @@
         people: state.people,
         baseCurrency: state.baseCurrency,
         defaultCurrency: state.defaultCurrency,
+        tripStartDate: state.tripStartDate || '',
+        tripEndDate: state.tripEndDate || '',
         fxRates: state.fxRates
       };
 
@@ -1668,6 +2620,7 @@
                 ${esc(expenseDate(expense))} · Paid by <b>${esc(expense.payer)}</b><br>
                 ${esc(expense.currency)} ${money(expense.amount)} × FX ${money(expense.fxRate)} = <b>${money(base)} ${esc(state.baseCurrency)}</b><br>
                 Split: ${esc((expense.splitWith || []).join(', '))}
+                ${expense.eventId && state.events.find(event => event.id === expense.eventId) ? `<div class="linkedEventMini">📅 ${esc(state.events.find(event => event.id === expense.eventId).title)}</div>` : ''}
               </div>
             </div>
             <div style="text-align:right">
@@ -1688,6 +2641,8 @@
     function render() {
       $('tripTitle').textContent = state.tripName;
       $('tripNameInput').value = state.tripName;
+      $('tripStartDate').value = state.tripStartDate || '';
+      $('tripEndDate').value = state.tripEndDate || '';
       $('metricCurrency').textContent = state.baseCurrency;
 
       fillSelect('baseCurrency', state.baseCurrency);
@@ -1698,6 +2653,7 @@
 
       setupForm('dash', 'quickDash');
       setupForm('quick', 'quickPage');
+      renderPlan();
 
       $('peopleList').innerHTML = state.people.map(person => `<button class="chip" data-remove="${esc(person)}">${esc(person)} ×</button>`).join('');
       [...$('peopleList').querySelectorAll('[data-remove]')].forEach(button => {
@@ -1779,17 +2735,15 @@
 
     function bindUi() {
       document.querySelectorAll('.tab').forEach(tab => {
-        tab.onclick = () => {
-          document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-          document.querySelectorAll('.tab').forEach(item => item.classList.remove('active'));
-          $(tab.dataset.view).classList.add('active');
-          tab.classList.add('active');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+        tab.onclick = () => activateView(tab.dataset.view);
       });
 
       $('search').oninput = render;
       $('closeEdit').onclick = () => $('editWrap').classList.remove('show');
+      $('addEventBtn').onclick = () => openEventModal();
+      $('closeEvent').onclick = closeEventModal;
+      $('cancelEvent').onclick = closeEventModal;
+      $('saveEventBtn').onclick = saveEvent;
 
       $('addPerson').onclick = async () => {
         const name = $('personInput').value.trim();
@@ -1805,6 +2759,11 @@
         state.tripName = $('tripNameInput').value.trim() || 'Trip Expense';
         state.baseCurrency = $('baseCurrency').value;
         state.defaultCurrency = $('defaultCurrency').value;
+        state.tripStartDate = $('tripStartDate').value || '';
+        state.tripEndDate = $('tripEndDate').value || '';
+        if (state.tripStartDate && state.tripEndDate && state.tripEndDate < state.tripStartDate) {
+          return toast('Trip end date must be after the start date');
+        }
         state.fxRates[state.baseCurrency] = 1;
         await saveMeta();
         render();
@@ -1827,7 +2786,7 @@
         const blob = new Blob([JSON.stringify({ tripId, ...state }, null, 2)], { type: 'application/json' });
         const anchor = document.createElement('a');
         anchor.href = URL.createObjectURL(blob);
-        anchor.download = 'trip-expense.json';
+        anchor.download = 'trip-hub.json';
         anchor.click();
         URL.revokeObjectURL(anchor.href);
       };
@@ -1856,6 +2815,9 @@
       });
       $('editWrap').addEventListener('click', event => {
         if (event.target === $('editWrap')) $('editWrap').classList.remove('show');
+      });
+      $('eventWrap').addEventListener('click', event => {
+        if (event.target === $('eventWrap')) closeEventModal();
       });
     }
 
@@ -1894,6 +2856,8 @@
               people: data.people || state.people,
               baseCurrency: data.baseCurrency || state.baseCurrency,
               defaultCurrency: data.defaultCurrency || state.defaultCurrency,
+              tripStartDate: data.tripStartDate || '',
+              tripEndDate: data.tripEndDate || '',
               fxRates: { ...state.fxRates, ...(data.fxRates || {}) }
             };
             render();
@@ -1906,6 +2870,11 @@
           state.expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           render();
         }, error => status('Expenses error: ' + error.message));
+
+        unsubscribeEvents = tripRef.collection('events').onSnapshot(snapshot => {
+          state.events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          render();
+        }, error => status('Itinerary error: ' + error.message));
       } catch (error) {
         status('Local fallback: ' + error.message);
         const saved = localStorage.getItem('trip-' + tripId);
