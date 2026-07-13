@@ -2256,7 +2256,7 @@
         <div class="emailInvitePanel">
           <div class="inviteHeroTitle">✉️ Invite by Google email</div>
           <div class="hint" style="margin-top:5px">
-            Add a friend's Google email here. Send them the normal trip link; when they sign in with that exact Google account, they will join automatically.
+            Add a friend's Google email here. When they sign in with that exact Google account, the trip will be discovered and added to My Trips automatically. You can still send the normal trip link as a shortcut.
           </div>
 
           <div class="emailInviteRow">
@@ -2728,12 +2728,79 @@
       renderSignedInUser();
     }
 
+    async function discoverAndJoinEmailInvites() {
+      const email = normalizeEmail(currentUser?.email);
+      if (!email || !currentUser?.uid) return 0;
+
+      let joinedCount = 0;
+
+      try {
+        // Top-level lookup uses a normal collection query, so no collection-group
+        // index is required. Security rules only allow a verified user to query
+        // lookup documents whose email matches their own authenticated email.
+        const lookupSnapshot = await db.collection('emailInviteLookup')
+          .where('email', '==', email)
+          .get();
+
+        const activeInvites = lookupSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(invite => invite.active === true && invite.tripId);
+
+        for (const invite of activeInvites) {
+          const targetTripRef = db.collection('trips').doc(invite.tripId);
+
+          try {
+            const tripSnapshot = await targetTripRef.get();
+            if (!tripSnapshot.exists) continue;
+
+            const tripData = tripSnapshot.data() || {};
+            const memberUids = Array.isArray(tripData.memberUids)
+              ? tripData.memberUids
+              : [];
+
+            if (memberUids.includes(currentUser.uid)) {
+              continue;
+            }
+
+            await targetTripRef.update({
+              memberUids: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            await targetTripRef.collection('members').doc(currentUser.uid).set(
+              currentUserProfile(),
+              { merge: true }
+            );
+
+            joinedCount += 1;
+
+          } catch (tripError) {
+            console.warn(`Could not auto-join invited trip ${invite.tripId}:`, tripError);
+          }
+        }
+
+      } catch (error) {
+        // Do not block the launcher if email-invite discovery fails.
+        console.warn('Email invitation discovery failed:', error);
+      }
+
+      return joinedCount;
+    }
+
     async function startLauncher() {
       showLauncher();
       launcherStatus('Connecting…');
 
       try {
         await initFirebase();
+
+        launcherStatus('Checking email invitations…');
+        const joinedCount = await discoverAndJoinEmailInvites();
+
+        if (joinedCount > 0) {
+          toast(`Joined ${joinedCount} invited trip${joinedCount === 1 ? '' : 's'}`);
+        }
+
         launcherStatus('Connected');
 
         if (unsubscribeTripList) {
@@ -2998,6 +3065,18 @@
           ref.collection('emailInvites').get()
         ]);
 
+        // Also clean top-level email invitation lookup documents for this trip.
+        const lookupDocs = [];
+        for (const inviteDoc of emailInvitesSnapshot.docs) {
+          const inviteEmail = normalizeEmail(inviteDoc.data().email || inviteDoc.id);
+          if (inviteEmail) {
+            const lookupRef = db.collection('emailInviteLookup').doc(
+              emailInviteLookupId(id, inviteEmail)
+            );
+            lookupDocs.push({ ref: lookupRef });
+          }
+        }
+
         // Firestore does not automatically delete subcollections when a parent document is deleted.
         // Clean up all subcollections created by this app before deleting the trip document.
         const docs = [
@@ -3005,7 +3084,8 @@
           ...eventsSnapshot.docs,
           ...membersSnapshot.docs,
           ...invitesSnapshot.docs,
-          ...emailInvitesSnapshot.docs
+          ...emailInvitesSnapshot.docs,
+          ...lookupDocs
         ];
         const batchSize = 400;
 
@@ -3197,6 +3277,10 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
 
+    function emailInviteLookupId(targetTripId, email) {
+      return `${targetTripId}__${encodeURIComponent(normalizeEmail(email))}`;
+    }
+
     async function addManualEmailInvite() {
       if (!isTripOwner()) return toast('Only the trip owner can add email invitations');
 
@@ -3211,7 +3295,7 @@
       button.textContent = 'Adding…';
 
       try {
-        await tripRef.collection('emailInvites').doc(email).set({
+        const inviteData = {
           tripId,
           email,
           active: true,
@@ -3219,10 +3303,23 @@
           createdByEmail: currentUser.email || '',
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        };
+
+        const batch = db.batch();
+        batch.set(
+          tripRef.collection('emailInvites').doc(email),
+          inviteData,
+          { merge: true }
+        );
+        batch.set(
+          db.collection('emailInviteLookup').doc(emailInviteLookupId(tripId, email)),
+          inviteData,
+          { merge: true }
+        );
+        await batch.commit();
 
         input.value = '';
-        toast(`${email} can now join this trip`);
+        toast(`${email} can now join this trip automatically`);
         await loadManualEmailInvites();
 
       } catch (error) {
@@ -3253,6 +3350,33 @@
           .map(doc => ({ id: doc.id, ...doc.data() }))
           .sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
 
+        // Backfill the top-level lookup for email invites created by an older app version.
+        // This lets invited users discover trips automatically from the launcher.
+        try {
+          const syncBatch = db.batch();
+          invites.forEach(invite => {
+            const email = normalizeEmail(invite.email || invite.id);
+            if (!email) return;
+
+            syncBatch.set(
+              db.collection('emailInviteLookup').doc(emailInviteLookupId(tripId, email)),
+              {
+                tripId,
+                email,
+                active: invite.active === true,
+                createdByUid: invite.createdByUid || currentUser.uid,
+                createdByEmail: invite.createdByEmail || currentUser.email || '',
+                createdAt: invite.createdAt || firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              },
+              { merge: true }
+            );
+          });
+          await syncBatch.commit();
+        } catch (syncError) {
+          console.warn('Could not sync email invite lookup:', syncError);
+        }
+
         box.innerHTML = invites.map(invite => `
           <div class="pendingEmailItem">
             <span class="pendingEmailText">✉️ ${esc(invite.email || invite.id)}</span>
@@ -3275,7 +3399,14 @@
       if (!confirm(`Remove invitation for ${email}?`)) return;
 
       try {
-        await tripRef.collection('emailInvites').doc(email).delete();
+        const normalized = normalizeEmail(email);
+        const batch = db.batch();
+        batch.delete(tripRef.collection('emailInvites').doc(normalized));
+        batch.delete(
+          db.collection('emailInviteLookup').doc(emailInviteLookupId(tripId, normalized))
+        );
+        await batch.commit();
+
         toast('Email invitation removed');
         await loadManualEmailInvites();
       } catch (error) {
