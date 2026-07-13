@@ -1951,7 +1951,7 @@
     // Optional UI-only convenience:
     // Put your own Google email here after you publish admin-only delete rules.
     // Leave blank to keep the Delete button visible to all approved users.
-    const ADMIN_EMAIL = 'jessica.szenga@gmail.com';
+    const ADMIN_EMAIL = '';
 
     let unsubscribeTrip = null;
     let unsubscribeExpenses = null;
@@ -2248,27 +2248,32 @@
 
       try {
         await initFirebase();
+
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
-        try {
-          await firebase.auth().signInWithPopup(provider);
-        } catch (error) {
-          // Popups can be blocked on some mobile browsers. Redirect is a safe fallback.
-          const popupFallbackCodes = [
-            'auth/popup-blocked',
-            'auth/popup-closed-by-user',
-            'auth/cancelled-popup-request',
-            'auth/operation-not-supported-in-this-environment'
-          ];
-          if (popupFallbackCodes.includes(error.code)) {
-            await firebase.auth().signInWithRedirect(provider);
-            return;
-          }
-          throw error;
-        }
+        const result = await firebase.auth().signInWithPopup(provider);
+        currentUser = result.user || firebase.auth().currentUser || null;
+
       } catch (error) {
-        showAuthScreen(`Google sign-in failed: ${error.message}`);
+        console.error('Google sign-in error:', error);
+
+        let message = error.message || 'Google sign-in failed.';
+
+        if (error.code === 'auth/popup-blocked') {
+          message = 'Your browser blocked the Google sign-in popup. Please allow popups for this website and try again.';
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          message = 'The Google sign-in window was closed before sign-in completed.';
+        } else if (error.code === 'auth/unauthorized-domain') {
+          message = 'This website is not authorized in Firebase Authentication. Add jessicacca62.github.io under Authorized domains.';
+        } else if (error.code === 'auth/operation-not-allowed') {
+          message = 'Google Sign-In is not enabled in Firebase Authentication.';
+        } else if (error.code === 'auth/network-request-failed') {
+          message = 'A network error interrupted Google sign-in. Please check your connection and try again.';
+        }
+
+        showAuthScreen(message);
+
       } finally {
         button.disabled = false;
         button.innerHTML = `
@@ -3689,14 +3694,6 @@
 
       try {
         await initFirebase();
-
-        // Complete a pending redirect sign-in, if mobile/browser popup fallback was used.
-        try {
-          await firebase.auth().getRedirectResult();
-        } catch (error) {
-          showAuthScreen(`Google sign-in failed: ${error.message}`);
-          return;
-        }
 
         const existingUser = await waitForAuthState();
         if (!existingUser) {
